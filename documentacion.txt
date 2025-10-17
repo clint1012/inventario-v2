@@ -1,0 +1,20 @@
+En sistemas Windows
+Abre tu archivo php.ini (por ejemplo, C:\xampp\php\php.ini o donde esté instalado PHP).
+
+Busca las líneas siguientes y elimínales el punto y coma (;) al inicio para habilitarlas:
+
+extension=gd
+extension=zip
+
+Guarda los cambios y reinicia el servidor (XAMPP, WAMP, o similar).
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Instala phpoffice/phpspreadsheet:
+
+Una vez habilitadas las extensiones, instala el paquete:
+
+composer require phpoffice/phpspreadsheet
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////

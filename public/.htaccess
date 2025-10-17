@@ -1,0 +1,39 @@
+# Deshabilitar la exploración de directorios
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Asegurar que el acceso a archivos ocultos esté restringido (como .env, .htaccess, etc.)
+    <FilesMatch "(\.env|\.htaccess|\.git|composer\..*|.*\.lock|README.md)">
+        Order allow,deny
+        Deny from all
+    </FilesMatch>
+
+    # Redirigir Tráfico a index.php si no existe un archivo o directorio
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php/$1 [L]
+
+    # Pasar el encabezado HTTP_AUTHORIZATION para soportar autenticación
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Desactivar la lista de archivos en directorios sin index.html
+Options -Indexes
+
+# Ocultar archivos sensibles como .env
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Bloquear acceso a carpetas sensibles
+<IfModule mod_rewrite.c>
+    RewriteCond %{REQUEST_URI} ^/(system|writable|storage) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Mejorar seguridad
+ServerSignature Off
