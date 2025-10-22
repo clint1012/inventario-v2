@@ -87,7 +87,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
 
                         <a class="collapse-item" href="<?= base_url("index.php/inventario2025") ?>">Inventario</a>
-                        <a class="collapse-item" href="<?= base_url("asignacion") ?>">Movimientos</a>
+                        <a class="collapse-item" href="<?= base_url('movimientos') ?>">Movimientos</a>
                         <a class="collapse-item" href="<?= base_url("index.php/baja") ?>">Baja</a>
                         <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i class="fas fa-network-wired mr-1"></i> IPs</a>
 
@@ -96,47 +96,20 @@
             </li>
 
             <!-- Divider -->
-            <!--<hr class="sidebar-divider">-->
+            <hr class="sidebar-divider">
 
             <!-- Heading -->
-            <!--<div class="sidebar-heading">
-                Reportes
-            </div>-->
+            <div class="sidebar-heading">
+                Seguridad
+            </div>
 
-            <!-- Nav Item - Pages Collapse Menu -->
-            <!--<li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages"
-                    aria-expanded="true" aria-controls="collapsePages">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Pages</span>
+            <!-- Nav Item - Usuarios -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('usuarios'); ?>">
+                    <i class="fas fa-users"></i>
+                    <span>Usuarios</span>
                 </a>
-                <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">Login Screens:</h6>
-                        <a class="collapse-item" href="sb2/login.html">Login</a>
-                        <a class="collapse-item" href="sb2/register.html">Register</a>
-                        <a class="collapse-item" href="sb2/forgot-password.html">Forgot Password</a>
-                        <div class="collapse-divider"></div>
-                        <h6 class="collapse-header">Other Pages:</h6>
-                        <a class="collapse-item" href="sb2/404.html">404 Page</a>
-                        <a class="collapse-item" href="sb2/blank.html">Blank Page</a>
-                    </div>
-                </div>
-            </li>-->
-
-            <!-- Nav Item - Charts -->
-            <!--<li class="nav-item">
-                <a class="nav-link" href="sb2/charts.html">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Charts</span></a>
-            </li>-->
-
-            <!-- Nav Item - Tables -->
-            <!--<li class="nav-item">
-                <a class="nav-link" href="sb2/tables.html">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Tables</span></a>
-            </li>-->
+            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -213,27 +186,22 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
-                                <img class="img-profile rounded-circle"
-                                    src="img/undraw_profile.svg">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small user-nombre"><?= session('nombre') ?></span>
+                                <?php
+                                    $foto = session('foto') ?? null;
+                                    $imgSrc = $foto ? base_url('uploads/usuarios/' . $foto) : base_url('img/avatar-default.png');
+                                ?>
+                                <img class="img-profile rounded-circle" src="<?= $imgSrc ?>">
                             </a>
                             <!-- Dropdown - User Information -->
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                 aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modalPerfil">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
                                 </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Activity Log
-                                </a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <a class="dropdown-item" href="<?= base_url('/logout') ?>">
                                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Logout
                                 </a>
@@ -283,19 +251,77 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Desea salir?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-body">Seleccione “Cerrar sesión” a continuación si está listo para finalizar su sesión actual.</div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <a class="btn btn-primary" href="<?= base_url('/logout') ?>">Salir</a>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal Perfil -->
+    <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Mi Perfil</h5>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+            <!-- Columna Foto -->
+            <div class="col-md-4 text-center">
+                <?php
+                $foto = session('foto');
+                $avatar = $foto ? base_url('uploads/usuarios/' . $foto)
+                                : base_url('img/avatar-default.png');
+                ?>
+                <img id="previewFoto" src="<?= $avatar ?>" class="img-fluid rounded-circle mb-3" style="max-width:180px;">
+                <form id="formFoto" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <input type="hidden" name="usuario_id" value="<?= session('usuario_id') ?>">
+                <div class="form-group">
+                    <label for="foto">Cambiar foto (JPG/PNG, máx 2MB)</label>
+                    <input id="inputFoto" type="file" name="foto" class="form-control-file" accept="image/*">
+                </div>
+                <button class="btn btn-primary btn-block" type="submit">Subir foto</button>
+                </form>
+            </div>
+
+            <!-- Columna Datos -->
+            <div class="col-md-8">
+                <form id="formDatos">
+                <?= csrf_field() ?>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" class="form-control" value="<?= esc(session('usuario')) ?>" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input name="nombre" type="text" class="form-control" value="<?= esc(session('nombre')) ?>" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo</label>
+                    <input name="correo" type="email" class="form-control" value="<?= esc(session('correo')) ?>">
+                </div>
+                <button class="btn btn-success" type="submit">Guardar cambios</button>
+                </form>
+            </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+        </div>
+    </div>
+    </div>
+
 
 
 
@@ -499,7 +525,90 @@ $(document).ready(function() {
 </script>
 
 
+<script>
+const BASE_URL = "<?= base_url() ?>";
 
+$(function(){
+
+  // Preview al seleccionar archivo
+  $('#inputFoto').on('change', function(e){
+      var file = this.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+          Swal.fire('Error', 'Archivo demasiado grande (máx 2MB)', 'error');
+          $(this).val('');
+          return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+          $('#previewFoto').attr('src', e.target.result);
+      };
+      reader.readAsDataURL(file);
+  });
+
+  // Subir foto (AJAX)
+  $('#formFoto').on('submit', function(e){
+      e.preventDefault();
+      var form = document.getElementById('formFoto');
+      var fd = new FormData(form);
+
+      $.ajax({
+          url: BASE_URL + '/perfil/foto',
+          method: 'POST',
+          data: fd,
+          processData: false,
+          contentType: false,
+          dataType: 'json',
+          success: function(resp){
+              if (resp.ok) {
+                  Swal.fire('Listo', resp.msg, 'success');
+                  // Actualizar imagen del topbar (si usas session foto)
+                  var imgTop = $('img.img-profile');
+                  if (imgTop.length) {
+                      imgTop.attr('src', resp.url + '?t=' + new Date().getTime());
+                  }
+              } else {
+                  Swal.fire('Error', resp.msg || 'Error al subir', 'error');
+              }
+          },
+          error: function(xhr){
+              Swal.fire('Error', 'Error al subir (ver consola)', 'error');
+              console.error(xhr);
+          }
+      });
+  });
+
+  // Guardar datos (AJAX)
+  $('#formDatos').on('submit', function(e){
+      e.preventDefault();
+      var data = $(this).serialize();
+
+      $.ajax({
+          url: BASE_URL + '/perfil/guardar',
+          method: 'POST',
+          data: data,
+          dataType: 'json',
+          success: function(resp){
+              if (resp.ok) {
+                  Swal.fire('Listo', resp.msg, 'success').then(()=> {
+                      // Actualizar nombre del topbar
+                      $('span.user-nombre').text($('input[name="nombre"]').val());
+                  });
+              } else {
+                  Swal.fire('Error', resp.msg || 'No se pudo actualizar', 'error');
+              }
+          },
+          error: function(xhr){
+              Swal.fire('Error', 'Error al guardar (ver consola)', 'error');
+              console.error(xhr);
+          }
+      });
+  });
+
+});
+</script>
 
 
 <?= $this->renderSection('scripts') ?>
