@@ -17,6 +17,7 @@ class Bienes extends BaseController
     {
         // Instancia el modelo BienesModel
         $this->bienesModel = new BienesModel();
+        helper('form');
     }
 
     protected $helpers = ['form'];

@@ -1,200 +1,136 @@
-<?php
-
-namespace App\Controllers;
+<?php namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\IpModel;
 use App\Models\BienesModel;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Dompdf\Dompdf;
+use App\Models\PersonasModel;    // Requerido para listas
+use App\Models\DepartamentosModel; // Requerido para listas
 
 class IpController extends BaseController
 {
     protected $ipModel;
     protected $bienesModel;
+    protected $personasModel;
+    protected $departamentosModel;
 
     public function __construct()
     {
+        // Instancia de los modelos
         $this->ipModel = new IpModel();
         $this->bienesModel = new BienesModel();
+        $this->personasModel = new PersonasModel();        
+        $this->departamentosModel = new DepartamentosModel(); 
     }
 
-    // Mostrar todas las IPs con datos del bien asignado (si lo hay)
+    // Muestra la vista principal con el DataTables
     public function index()
     {
-        $subred = $this->request->getGet('subred');
-
-        $builder = $this->ipModel
-            ->select('ips.*, bienes.cod_patrimonial, bienes.descripcion')
-            ->join('bienes', 'bienes.id = ips.bien_id', 'left');
-
-        if ($subred) {
-            $builder->like('direccion_ip', $subred . '.', 'after');
-        }
-
-        $builder->orderBy('INET_ATON(direccion_ip)', 'ASC');
-
-        $data['ips'] = $builder->findAll();
-        $data['subred_actual'] = $subred;
-
-        return view('Ips/index', $data);
+        return view('Ips/index_datatable');
     }
 
-    // Formulario + proceso para asignar IP a un bien
-    public function asignar()
+    // Endpoint para DataTables (Carga la data vía AJAX)
+    public function datatables()
     {
-        if ($this->request->getMethod() === 'post') {
-            $ip_id = $this->request->getPost('ip_id');
-            $bien_id = $this->request->getPost('bien_id');
-            $observaciones = $this->request->getPost('observaciones');
+        $ips = $this->ipModel->obtenerIpsConRelaciones()->findAll();
 
-            $resultado = $this->ipModel->update($ip_id, [
-                'bien_id' => $bien_id,
-                'estado' => 'asignado',
-                'fecha_asignacion' => date('Y-m-d'),
-                'observaciones' => $observaciones,
-            ]);
-
-            // (Opcional) Debug si falla
-            if (!$resultado) {
-                dd('No se guardó', $this->ipModel->errors());
-            }
-
-            return redirect()->to('/ip')->with('mensaje', 'IP asignada correctamente.');
-        }
-
-        $data['ips'] = $this->ipModel->obtenerDisponibles();
-        $data['bienes'] = $this->bienesModel->findAll();
-
-        return view('Ips/asignar', $data);
-    }
-
-    // Liberar una IP (desvincular del bien y ponerla como disponible)
-    public function liberar($id)
-    {
-        $this->ipModel->update($id, [
-            'bien_id' => null,
-            'estado' => 'disponible',
-            'fecha_asignacion' => null,
-            'observaciones' => null
-        ]);
-
-        return redirect()->to('/ip')->with('mensaje', 'IP liberada correctamente.');
-    }
-
-    // Eliminar IPs que empiezan por 192.
-    public function eliminar192()
-    {
-        $this->ipModel->where('direccion_ip LIKE', '192.%')->delete();
-        return redirect()->to('/ip')->with('mensaje', 'IPs con 192.*.*.* eliminadas.');
-    }
-
-    // Exportar a Excel
-    public function exportarExcel()
-    {
-        $ips = $this->obtenerIPsFiltradas();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('IPs');
-
-        $sheet->setCellValue('A1', 'Dirección IP');
-        $sheet->setCellValue('B1', 'Estado');
-        $sheet->setCellValue('C1', 'Cod. Patrimonial');
-        $sheet->setCellValue('D1', 'Descripción');
-        $sheet->setCellValue('E1', 'Fecha Asignación');
-
-        $row = 2;
+        $data = [];
         foreach ($ips as $ip) {
-            $sheet->setCellValue("A$row", $ip['direccion_ip']);
-            $sheet->setCellValue("B$row", $ip['estado']);
-            $sheet->setCellValue("C$row", $ip['cod_patrimonial'] ?? '-');
-            $sheet->setCellValue("D$row", $ip['descripcion'] ?? '-');
-            $sheet->setCellValue("E$row", $ip['fecha_asignacion'] ?? '-');
-            $row++;
+            $row = [
+                $ip['direccion_ip'],
+                // Datos de la Persona (Nombre)
+                $ip['nombre_persona'] ?? '<span class="badge badge-secondary">N/A</span>',      
+                // Datos del Departamento (Área)
+                $ip['nombre_area'] ?? '<span class="badge badge-secondary">N/A</span>',         
+                $ip['piso'] ?? 'N/A',
+                // Datos del Bien Patrimonial
+                $ip['cod_patrimonial'] ?? 'N/A',
+                $ip['descripcion_bien'] ?? 'N/A',
+                // Columna Acciones
+                '<a href="' . base_url('ip/editar/' . $ip['id']) . '" class="btn btn-sm btn-warning">Editar</a>'
+            ];
+            $data[] = $row;
         }
 
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'reporte_ips_' . date('Ymd_His') . '.xlsx';
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        $writer->save("php://output");
-        exit;
+        // Responde con el formato JSON que DataTables espera
+        return $this->response->setJSON(['data' => $data]);
     }
 
-    // Exportar a PDF
-    public function exportarPDF()
+    // Muestra el formulario de edición (GET)
+    public function editar($id)
     {
-        $data['ips'] = $this->obtenerIPsFiltradas();
-        $html = view('Ips/reporte_pdf', $data);
+        $data['ip'] = $this->ipModel->obtenerIpsConRelaciones()
+                                    ->where('ips.id', $id)
+                                    ->first();
 
-        $dompdf = new Dompdf();
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'landscape');
-        $dompdf->render();
-        $dompdf->stream("reporte_ips_" . date('Ymd_His') . ".pdf", ["Attachment" => true]);
+        if (empty($data['ip'])) {
+            return redirect()->to('/ip')->with('error', 'IP no encontrada.');
+        }
+        
+        // Cargar listas completas para los SELECTs en la vista
+        $data['bienes'] = $this->bienesModel->select('id, cod_patrimonial, descripcion')->findAll();
+        $data['personas'] = $this->personasModel->select('id, nombre_completo')->findAll();
+        $data['departamentos'] = $this->departamentosModel->select('id, nombre')->findAll();
+
+        return view('Ips/editar', $data);
     }
 
-    // Filtrado de IPs
-    private function obtenerIPsFiltradas()
+    // Procesa el formulario de edición (POST)
+    public function actualizar($id)
     {
-        $subred = $this->request->getGet('subred');
-        $ip = $this->request->getGet('ip');
-        $patrimonial = $this->request->getGet('patrimonial');
-
-        $builder = $this->ipModel->select('ips.*, bienes.cod_patrimonial, bienes.descripcion')
-            ->join('bienes', 'bienes.id = ips.bien_id', 'left');
-
-        if ($subred) {
-            $builder->like('ips.direccion_ip', $subred . '.', 'after');
+        // 1. Validar los datos (id_persona/id_departamento/bien_id pueden ser vacíos)
+        if (!$this->validate([
+            'id_persona' => 'permit_empty|integer',
+            'id_departamento' => 'permit_empty|integer',
+            'bien_id' => 'permit_empty|integer',
+            'piso' => 'permit_empty|max_length[50]', 
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        if ($ip) {
-            $builder->like('ips.direccion_ip', $ip);
-        }
+        // 2. Obtener y Limpiar los IDs (si están vacíos, se guardan como NULL en la DB)
+        $id_persona = $this->request->getPost('id_persona') ?: null;
+        $id_departamento = $this->request->getPost('id_departamento') ?: null;
+        $bien_id = $this->request->getPost('bien_id') ?: null;
+        
+        // La IP se considera asignada si tiene AL MENOS una relación
+        $estaAsignado = $id_persona || $id_departamento || $bien_id;
 
-        if ($patrimonial) {
-            $builder->like('bienes.cod_patrimonial', $patrimonial);
-        }
+        $datosActualizar = [
+            'id_persona' => $id_persona,
+            'id_departamento' => $id_departamento,
+            'bien_id' => $bien_id,
+            'piso' => $this->request->getPost('piso'),
+            'observaciones' => $this->request->getPost('observaciones'),
+            'estado' => $estaAsignado ? 'asignado' : 'disponible', 
+            'fecha_asignacion' => $estaAsignado ? date('Y-m-d') : null,
+        ];
+        
+        // 3. Actualizar
+        $this->ipModel->update($id, $datosActualizar);
 
-        return $builder->findAll();
+        return redirect()->to('/ip')->with('mensaje', 'Asignación de IP actualizada correctamente.');
     }
 
-    public function buscarIpsDisponibles()
+    public function buscarAsignacionBien()
     {
-        $term = $this->request->getGet('term');
-        $ips = $this->ipModel
-            ->select('id, direccion_ip')
-            ->like('direccion_ip', $term)
-            ->where('estado', 'disponible')
-            ->findAll(10);
+        $codigo = $this->request->getGet('cod_patrimonial');
+        
+        if (empty($codigo)) {
+            return $this->response->setJSON(['error' => 'Código patrimonial requerido']);
+        }
 
-        $result = array_map(fn($ip) => [
-            'id' => $ip['id'],
-            'text' => $ip['direccion_ip']
-        ], $ips);
+        // Usamos el método ajustado para obtener el ID, Persona y Departamento
+        $asignacion = $this->bienesModel->buscarAsignacionPorCodigo($codigo);
 
-        return $this->response->setJSON($result);
-    }
+        if (!$asignacion) {
+            // Bien no encontrado, devolvemos un JSON para limpiar y alertar.
+            return $this->response->setJSON([
+                'id' => null, 
+                'mensaje' => 'Bien no encontrado o sin asignación actual.'
+            ]);
+        }
 
-    public function buscarBienes()
-    {
-        $term = $this->request->getGet('term');
-        $bienes = $this->bienesModel
-            ->select('id, cod_patrimonial, descripcion')
-            ->groupStart()
-                ->like('cod_patrimonial', $term)
-                ->orLike('descripcion', $term)
-            ->groupEnd()
-            ->findAll(10);
-
-        $result = array_map(fn($bien) => [
-            'id' => $bien['id'],
-            'text' => $bien['cod_patrimonial'] . ' - ' . $bien['descripcion']
-        ], $bienes);
-
-        return $this->response->setJSON($result);
+        // Devolvemos el array con el ID del bien, el nombre y el área.
+        return $this->response->setJSON($asignacion);
     }
 }

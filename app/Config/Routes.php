@@ -50,6 +50,7 @@ $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 
 $routes->post('bienes/desactivar', 'Bienes::desactivar', ['filter' => 'auth']);
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
 
+
 // ======================================================
 // Inventario extras
 // ======================================================
@@ -71,14 +72,24 @@ $routes->get('baja/exportarExcel', 'Baja::exportarExcel', ['filter' => 'auth']);
 // ======================================================
 // IPs extras
 // ======================================================
-$routes->get('ip/exportarExcel', 'Ip::exportarExcel', ['filter' => 'auth']);
-$routes->get('ip/exportarPDF', 'Ip::exportarPDF', ['filter' => 'auth']);
-$routes->get('ip/asignar', 'IpController::asignar', ['filter' => 'auth']);
-$routes->post('ip/asignar', 'IpController::asignar', ['filter' => 'auth']);
-$routes->get('ip/liberar/(:num)', 'IpController::liberar/$1', ['filter' => 'auth']);
+
+// 1. RUTA PRINCIPAL (DataTables) - Ya cubierta por resource, pero la ponemos para claridad:
+// $routes->get('ip', 'IpController::index', ['filter' => 'auth']); 
+
+// 2. ENDPOINT AJAX para DataTables (Carga los datos)
+$routes->get('ip/datatables', 'IpController::datatables', ['filter' => 'auth']);
+
+// 3. EDICIÓN (Formulario GET y Procesamiento POST) - Estos son los métodos clave
+$routes->get('ip/editar/(:num)', 'IpController::editar/$1', ['filter' => 'auth']);
+$routes->post('ip/actualizar/(:num)', 'IpController::actualizar/$1', ['filter' => 'auth']); // El POST para actualizar
+
+// 4. MANTENEMOS LAS OTRAS RUTAS ÚTILES (Exportaciones, Búsquedas AJAX, etc.)
+$routes->get('ip/exportarExcel', 'IpController::exportarExcel', ['filter' => 'auth']); // NOTA: Asegúrate que el controlador sea IpController
+$routes->get('ip/exportarPDF', 'IpController::exportarPDF', ['filter' => 'auth']);     // NOTA: Asegúrate que el controlador sea IpController
 $routes->get('ip/eliminar192', 'IpController::eliminar192', ['filter' => 'auth']);
-$routes->get('ip/buscarIpsDisponibles', 'IpController::buscarIpsDisponibles', ['filter' => 'auth']);
-$routes->get('ip/buscarBienes', 'IpController::buscarBienes', ['filter' => 'auth']);
+$routes->get('ip/buscarAsignacionBien', 'IpController::buscarAsignacionBien', ['filter' => 'auth']);
+
+
 
 // ======================================================
 // Usuarios
