@@ -56,7 +56,7 @@
      <br>
     <br>
 
-    <p><strong>Fecha de emisión:</strong> <?= esc($fecha_emision ?? '') ?></p>
+    <p><strong>Fecha de emisión:</strong> <?= esc($fecha_mov ?? '') ?></p>
     <p><strong>Usuario actual:</strong> <?= esc(($persona['nombre'] ?? '') . ' ' . ($persona['ape_paterno'] ?? '') . ' ' . ($persona['ape_materno'] ?? '')) ?></p>
 
     <?php 
@@ -70,7 +70,7 @@
 
     <p><strong>Departamento:</strong> <?= esc($departamento) ?></p>
     <p><strong>Local:</strong> <?= esc($local) ?></p>
-    <p><strong>Último responsable anterior:</strong> <?= esc($ultimo_duenio) ?></p>
+    <p><strong>Último responsable anterior:</strong> <?= esc($ultimo_responsable) ?></p>
  
     <br> <br>
     
@@ -94,7 +94,7 @@
                         <td><?= esc($b['marca']) ?></td>
                         <td><?= esc($b['modelo']) ?></td>
                         <td><?= esc($b['serie']) ?></td>
-                        <td><?= esc(ucfirst($b['estado'] ?? '')) ?></td>
+                        <td><?= esc(ucfirst($b['estado'] ?? '-')) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -103,9 +103,13 @@
         <p><em>No hay bienes registrados en este movimiento.</em></p>
     <?php endif; ?>
 
+    <br>
+
+    <p><strong>Observaciones:</strong><br> <?= nl2br($observaciones) ?></p>
+
     <table class="firmas">
         <tr>
-            <td>__________________________<br>Usuario Responsable</td>
+            <td>__________________________<br><?= esc(($persona['nombre'] ?? '') . ' ' . ($persona['ape_paterno'] ?? '') . ' ' . ($persona['ape_materno'] ?? '')) ?></td>
             <td>__________________________<br>Técnico de Soporte</td>
         </tr>
     </table>
@@ -115,7 +119,7 @@
         “Normas que regulan el Uso de las Tecnologías de Información y Comunicaciones en el Tribunal Constitucional”.
     </p>
 
-    <p class="fecha">Lima, <?= date('d \d\e F \d\e Y') ?></p>
+    <p class="fecha">Lima, <?= $fecha_mov ?></p>
 
 </body>
 </html>

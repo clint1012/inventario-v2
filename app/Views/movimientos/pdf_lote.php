@@ -4,50 +4,27 @@
     <meta charset="UTF-8">
     <title>Reporte de Cargo por Lote</title>
     <style>
-        body { font-family: sans-serif; font-size: 12px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         table, th, td { border: 1px solid #000; }
-        th, td { padding: 6px; text-align: left; }
+        th, td { padding: 6px; text-align: left; font-size: 13px; } /* letra más pequeña */
         h2 { text-align: center; margin: 0; }
 
-        .header {
-            width: 100%;
-            border: none;
-            margin-bottom: 20px;
-        }
-        .header td {
-            border: none;
-            vertical-align: middle;
-        }
-        .logo {
-            width: 120px;
-        }
-        .info p { margin: 4px 0; }
-        .firmas {
-            margin-top: 100px;
-            width: 100%;
-            text-align: center;
-        }
-        .firmas td {
-            padding: 50px 20px;
-            vertical-align: bottom;
-        }
-        .linea {
-            border-top: 1px solid #000;
-            width: 80%;
-            margin: 0 auto;
-            height: 5px;
-        }
+        .header { width: 100%; border: none; margin-bottom: 20px; }
+        .header td { border: none; vertical-align: middle; }
+        .info p { margin: 4px 0; font-size: 13px; }
+        .firmas { margin-top: 60px; width: 100%; text-align: center; }
+        .firmas td { padding: 40px 20px; vertical-align: bottom; }
+        .linea { border-top: 1px solid #000; width: 80%; margin: 0 auto; height: 5px; }
     </style>
 </head>
 <body>
+
+
     <!-- Cabecera con logo y título -->
     <table class="header">
         <tr>
-            <td class="logo">
-                <img src="<?= FCPATH . 'sb2/img/tc_logo_superior.png' ?>" width="120">
-            </td>
-            <td style="text-align: center; width: 100%;">
+            
+            <td style="text-align: center;">
                 <h2>REPORTE DE CARGO POR LOTE</h2>
                 <p>Fecha de emisión: <?= date('d/m/Y H:i:s') ?></p>
             </td>
@@ -55,8 +32,8 @@
     </table>
 
     <!-- Información general del lote -->
+    <?php $primero = $movimientos[0]; ?>
     <div class="info">
-        <?php $primero = $movimientos[0]; ?>
         <p><strong>Usuario actual:</strong> <?= $primero['nombre'].' '.$primero['ape_paterno'].' '.$primero['ape_materno'] ?></p>
 
         <?php if (!empty($primero['nombre_anterior'])): ?>
@@ -70,7 +47,7 @@
         <p><strong>Observaciones:</strong> <?= $primero['observaciones'] ?: '-' ?></p>
     </div>
 
-    <!-- Tabla de bienes del lote -->
+    <!-- Tabla de bienes -->
     <table>
         <thead>
             <tr>
@@ -79,9 +56,6 @@
                 <th>Marca</th>
                 <th>Modelo</th>
                 <th>Serie</th>
-                <th>Usuario</th>
-                <th>Departamento</th>
-                <th>Local</th>
             </tr>
         </thead>
         <tbody>
@@ -92,28 +66,23 @@
                     <td><?= $m['marca'] ?></td>
                     <td><?= $m['modelo'] ?></td>
                     <td><?= $m['serie'] ?></td>
-                    <td><?= $m['nombre'].' '.$m['ape_paterno'].' '.$m['ape_materno'] ?></td>
-                    <td><?= $m['departamento'] ?></td>
-                    <td><?= $m['local'] ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 
-    <!-- Sección de firmas -->
+    <!-- Firmas -->
     <table class="firmas">
         <tr>
             <td>
                 <div class="linea"></div>
                 <p>Usuario de destino<br>
-                   <?= $primero['nombre'].' '.$primero['ape_paterno'].' '.$primero['ape_materno'] ?>
-                </p>
+                <?= $primero['nombre'].' '.$primero['ape_paterno'].' '.$primero['ape_materno'] ?></p>
             </td>
             <td>
                 <div class="linea"></div>
                 <p>Técnico responsable<br>
-                   <?= $primero['usuario_registro'] ?? '________________' ?>
-                </p>
+                <?= $primero['usuario_registro'] ?? '________________' ?></p>
             </td>
         </tr>
     </table>

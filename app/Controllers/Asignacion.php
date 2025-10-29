@@ -20,7 +20,7 @@ class Asignacion extends BaseController
     public function __construct()
     {
         $this->asignacionModel = new AsignacionModel();
-        $this->bienesModel     = new BienesModel();
+        $this->bienesModel = new BienesModel();
 
         // ✅ Forzar hora local
         date_default_timezone_set('America/Lima');
@@ -37,9 +37,9 @@ class Asignacion extends BaseController
     public function new()
     {
         $data = [
-            'personas'      => (new PersonasModel())->findAll(),
+            'personas' => (new PersonasModel())->findAll(),
             'departamentos' => (new DepartamentosModel())->findAll(),
-            'locales'       => (new LocalesModel())->findAll(),
+            'locales' => (new LocalesModel())->findAll(),
         ];
         return view('movimientos/create', $data);
     }
@@ -47,14 +47,14 @@ class Asignacion extends BaseController
     // 📌 Guardar movimientos
     public function create()
     {
-        $idPersona      = $this->request->getPost('id_personas');
+        $idPersona = $this->request->getPost('id_personas');
         $idDepartamento = $this->request->getPost('id_departamentos');
-        $idLocal        = $this->request->getPost('id_locales');
-        $tipo           = $this->request->getPost('tipo_movimiento');
-        $fecha          = $this->request->getPost('fecha_movimiento') 
-                          ? $this->request->getPost('fecha_movimiento') . ' ' . date('H:i:s')
-                          : date('Y-m-d H:i:s');
-        $observaciones  = $this->request->getPost('observaciones') ?? '';
+        $idLocal = $this->request->getPost('id_locales');
+        $tipo = $this->request->getPost('tipo_movimiento');
+        $fecha = $this->request->getPost('fecha_movimiento')
+            ? $this->request->getPost('fecha_movimiento') . ' ' . date('H:i:s')
+            : date('Y-m-d H:i:s');
+        $observaciones = $this->request->getPost('observaciones') ?? '';
 
         // 🔑 Generar lote único
         $lote = uniqid('mov_');
@@ -81,7 +81,8 @@ class Asignacion extends BaseController
     // 📌 Procesar asignaciones
     private function procesarAsignacion($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote)
     {
-        if (empty($bienes) || !is_array($bienes)) return;
+        if (empty($bienes) || !is_array($bienes))
+            return;
 
         foreach ($bienes as $idBien) {
             // Guardar dueño anterior
@@ -89,22 +90,22 @@ class Asignacion extends BaseController
             $dueñoAnterior = $bien['id_personas'] ?? null;
 
             $this->asignacionModel->insert([
-                'id_bienes'        => $idBien,
-                'id_personas'      => $idPersona,
+                'id_bienes' => $idBien,
+                'id_personas' => $idPersona,
                 'id_departamentos' => $idDepartamento,
-                'id_locales'       => $idLocal,
-                'tipo_movimiento'  => 'asignacion',
+                'id_locales' => $idLocal,
+                'tipo_movimiento' => 'asignacion',
                 'fecha_movimiento' => $fecha,
-                'observaciones'    => $observaciones,
-                'lote'             => $lote,
+                'observaciones' => $observaciones,
+                'lote' => $lote,
                 'id_persona_anterior' => $dueñoAnterior // 📌 historial
             ]);
 
             $this->bienesModel->update($idBien, [
-                'estado'          => 'asignado',
-                'id_personas'     => $idPersona,
-                'id_departamentos'=> $idDepartamento,
-                'id_locales'      => $idLocal,
+                'estado' => 'asignado',
+                'id_personas' => $idPersona,
+                'id_departamentos' => $idDepartamento,
+                'id_locales' => $idLocal,
             ]);
         }
     }
@@ -112,29 +113,30 @@ class Asignacion extends BaseController
     // 📌 Procesar retiros
     private function procesarRetiro($bienes, $fecha, $observaciones, $lote)
     {
-        if (empty($bienes) || !is_array($bienes)) return;
+        if (empty($bienes) || !is_array($bienes))
+            return;
 
         foreach ($bienes as $idBien) {
             $bien = $this->bienesModel->find($idBien);
             $dueñoAnterior = $bien['id_personas'] ?? null;
 
             $this->asignacionModel->insert([
-                'id_bienes'        => $idBien,
-                'id_personas'      => 254,
+                'id_bienes' => $idBien,
+                'id_personas' => 254,
                 'id_departamentos' => 1,
-                'id_locales'       => 5,
-                'tipo_movimiento'  => 'retiro',
+                'id_locales' => 5,
+                'tipo_movimiento' => 'retiro',
                 'fecha_movimiento' => $fecha,
-                'observaciones'    => $observaciones,
-                'lote'             => $lote,
+                'observaciones' => $observaciones,
+                'lote' => $lote,
                 'id_persona_anterior' => $dueñoAnterior
             ]);
 
             $this->bienesModel->update($idBien, [
-                'estado'          => 'activo',
-                'id_personas'     => 254,
-                'id_departamentos'=> 1,
-                'id_locales'      => 5,
+                'estado' => 'activo',
+                'id_personas' => 254,
+                'id_departamentos' => 1,
+                'id_locales' => 5,
             ]);
         }
     }
@@ -142,9 +144,9 @@ class Asignacion extends BaseController
     // 📌 Buscar bienes
     public function buscarBienes()
     {
-        $term     = $this->request->getGet('q');
-        $tipo     = $this->request->getGet('tipo');
-        $idPersona= $this->request->getGet('persona');
+        $term = $this->request->getGet('q');
+        $tipo = $this->request->getGet('tipo');
+        $idPersona = $this->request->getGet('persona');
 
         $builder = $this->bienesModel;
 
@@ -169,9 +171,9 @@ class Asignacion extends BaseController
             }
 
             $results[] = [
-                'id'       => $b['id'],
-                'text'     => "{$b['cod_patrimonial']} - {$b['descripcion']}",
-                'estado'   => $b['estado'],
+                'id' => $b['id'],
+                'text' => "{$b['cod_patrimonial']} - {$b['descripcion']}",
+                'estado' => $b['estado'],
                 'disabled' => $disable
             ];
         }
@@ -203,10 +205,9 @@ class Asignacion extends BaseController
     public function descargarCargoLote($lote)
     {
         $movimientos = $this->asignacionModel
-            ->select('movimientos.*, bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie,
-                      personas.nombre, personas.ape_paterno, personas.ape_materno,
-                      p2.nombre as nombre_anterior, p2.ape_paterno as apep_anterior, p2.ape_materno as apem_anterior,
-                      departamentos.nombre AS departamento, locales.nombre AS local')
+            ->select('movimientos.*, bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie, 
+        personas.nombre, personas.ape_paterno, personas.ape_materno, p2.nombre as nombre_anterior, p2.ape_paterno as apep_anterior, 
+        p2.ape_materno as apem_anterior, departamentos.nombre AS departamento, locales.nombre AS local')
             ->where('lote', $lote)
             ->join('bienes', 'bienes.id = movimientos.id_bienes', 'left')
             ->join('personas', 'personas.id = movimientos.id_personas', 'left')
@@ -214,17 +215,17 @@ class Asignacion extends BaseController
             ->join('departamentos', 'departamentos.id = movimientos.id_departamentos', 'left')
             ->join('locales', 'locales.id = movimientos.id_locales', 'left')
             ->findAll();
-
         if (!$movimientos) {
-            return redirect()->to('/movimientos')->with('error', 'No se encontraron movimientos para este lote.');
+            return redirect()->to('/movimientos')
+                ->with('error', 'No se encontraron movimientos para este lote.');
         }
-
-        $html = view('movimientos/pdf_lote', ['movimientos' => $movimientos]);
-
+        $html = view('movimientos/pdf_lote', [
+            'movimientos' => $movimientos
+        ]);
         $options = new Options();
-        $options->set('isRemoteEnabled', true); // Permitir imágenes externas (URLs) o base_url
+        $options->set('isRemoteEnabled', true);
+        // Permitir imágenes externas (URLs) o base_url 
         $dompdf = new Dompdf($options);
-
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
@@ -233,67 +234,100 @@ class Asignacion extends BaseController
 
 
     // 📄 Generar Acta consolidada por usuario
-     // 📄 Generar Acta consolidada por usuario
- 
-public function descargarActa($idPersona)
-{
-    $personaModel = new \App\Models\PersonasModel();
-    $movModel = new \App\Models\AsignacionModel();
+    // 📄 Generar Acta consolidada por usuario
 
-    // Buscar persona
-    $persona = $personaModel->find($idPersona);
-    if (!$persona) {
-        return redirect()->back()->with('error', 'Persona no encontrada');
+    public function descargarActa($idPersona)
+    {
+        $personaModel = new \App\Models\PersonasModel();
+        $movModel = new \App\Models\AsignacionModel();
+
+        // Buscar persona
+        $persona = $personaModel->find($idPersona);
+        if (!$persona) {
+            return redirect()->back()->with('error', 'Persona no encontrada');
+        }
+
+        // Buscar el último movimiento del usuario con responsable anterior
+        $ultimo = $movModel
+            ->select('movimientos.lote, movimientos.tipo_movimiento, movimientos.fecha_movimiento, 
+                  movimientos.observaciones,
+                  p2.nombre as nombre_anterior, p2.ape_paterno as apep_anterior, p2.ape_materno as apem_anterior')
+            ->join('personas as p2', 'p2.id = movimientos.id_persona_anterior', 'left')
+            ->where('movimientos.id_personas', $idPersona)
+            ->orderBy('movimientos.fecha_movimiento', 'DESC')
+            ->first();
+
+        if (!$ultimo) {
+            return redirect()->back()->with('error', 'No se encontraron movimientos');
+        }
+
+        // Obtener los bienes del lote (ahora incluye la fecha de adquisición)
+        $bienes = $movModel
+            ->select('bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie,
+                  bienes.fecha_adquisicion,
+                  departamentos.nombre AS departamento, locales.nombre AS local')
+            ->join('bienes', 'bienes.id = movimientos.id_bienes')
+            ->join('departamentos', 'departamentos.id = movimientos.id_departamentos', 'left')
+            ->join('locales', 'locales.id = movimientos.id_locales', 'left')
+            ->where('movimientos.lote', $ultimo['lote'])
+            ->findAll();
+
+        // 🧮 Calcular estado según antigüedad
+        $hoy = new \DateTime();
+        foreach ($bienes as &$bien) {
+            if (!empty($bien['fecha_adquisicion'])) {
+                $fechaAdq = new \DateTime($bien['fecha_adquisicion']);
+                $anios = $fechaAdq->diff($hoy)->y; // diferencia en años
+
+                if ($anios <= 5) {
+                    $bien['estado'] = 'BUENO';
+                } elseif ($anios <= 9) {
+                    $bien['estado'] = 'REGULAR';
+                } else {
+                    $bien['estado'] = 'MALO';
+                }
+            } else {
+                $bien['estado'] = 'SIN FECHA';
+            }
+        }
+
+        // Ruta del logo
+        $logoPath = 'C:/xampp/htdocs/inventariov2/public/sb2/img/tc_logo_superior.png';
+
+        // Determinar último responsable anterior
+        $ultimo_responsable = 'No registrado';
+        if (!empty($ultimo['nombre_anterior'])) {
+            $ultimo_responsable = trim($ultimo['nombre_anterior'] . ' ' . $ultimo['apep_anterior'] . ' ' . $ultimo['apem_anterior']);
+        }
+
+        // Enviar datos a la vista
+        $data = [
+            'persona' => $persona,
+            'bienes' => $bienes,
+            'tipo' => strtoupper($ultimo['tipo_movimiento']),
+            'fecha_mov' => $ultimo['fecha_movimiento'],
+            'observaciones' => $ultimo['observaciones'],
+            'logo_path' => $logoPath,
+            'ultimo_responsable' => $ultimo_responsable,
+        ];
+
+        // Configurar DomPDF
+        $options = new \Dompdf\Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new \Dompdf\Dompdf($options);
+
+        // Cargar el HTML
+        $html = view('movimientos/pdf_acta', $data);
+
+        // Generar el PDF
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $dompdf->stream("Acta_{$persona['nombre']}.pdf", ["Attachment" => false]);
     }
 
-    // Buscar el último movimiento del usuario
-    $ultimo = $movModel
-        ->select('lote, tipo_movimiento, fecha_movimiento')
-        ->where('id_personas', $idPersona)
-        ->orderBy('fecha_movimiento', 'DESC')
-        ->first();
 
-    if (!$ultimo) {
-        return redirect()->back()->with('error', 'No se encontraron movimientos');
-    }
-
-    // Obtener los bienes de ese lote
-    $bienes = $movModel
-    ->select('bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie,
-              departamentos.nombre AS departamento, locales.nombre AS local')
-    ->join('bienes', 'bienes.id = movimientos.id_bienes')
-    ->join('departamentos', 'departamentos.id = movimientos.id_departamentos', 'left')
-    ->join('locales', 'locales.id = movimientos.id_locales', 'left')
-    ->where('movimientos.lote', $ultimo['lote'])
-    ->findAll();
-
-
-    $logoPath = 'C:/xampp/htdocs/inventariov2/public/sb2/img/tc_logo_superior.png';
-    // Enviar los datos a la vista
-    $data = [
-        'persona' => $persona,
-        'bienes' => $bienes,
-        'tipo' => strtoupper($ultimo['tipo_movimiento']),
-        'fecha_emision' => date('d/m/Y H:i:s'),
-        'logo_path' => $logoPath
-    ];
-
-    // ✅ Configurar DomPDF (permite imágenes locales)
-    $options = new \Dompdf\Options();
-    $options->set('isRemoteEnabled', true);
-    $dompdf = new \Dompdf\Dompdf($options);
-
-    // Cargar el HTML
-    $html = view('movimientos/pdf_acta', $data);
-
-    // Generar el PDF
-    $dompdf = new \Dompdf\Dompdf();
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-    
-   $dompdf->stream("Acta_{$persona['nombre']}.pdf", ["Attachment" => false]);
-}
 
 
 

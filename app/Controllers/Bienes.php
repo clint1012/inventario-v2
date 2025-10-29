@@ -146,7 +146,7 @@ class Bienes extends BaseController
         ];
 
         if (!$this->validate($reglas)) {
-            return redirect()->back()->withInput()->with('error', $this->validator->listErrors());
+            return redirect()->back()->withInput()->with('error', message: $this->validator->listErrors());
         }
 
         $post = $this->request->getPost([
@@ -260,7 +260,8 @@ class Bienes extends BaseController
         ];
         if (!$this->validate($reglas)) {
             return redirect()->back()->withInput()->with('error', $this->validator->listErrors());
-        };
+        }
+        ;
 
         $post = $this->request->getPost([
             'cod_patrimonial',
@@ -502,5 +503,40 @@ class Bienes extends BaseController
         $existe = $bienesModel->where('cod_patrimonial', $cod_patrimonial)->first();
 
         return $this->response->setJSON(['existe' => $existe ? true : false]);
+    }
+
+    public function getDepartamentos()
+    {
+        $departamentosModel = new \App\Models\DepartamentosModel();
+        $departamentos = $departamentosModel
+            ->select('id,nombre')
+            ->orderBy('nombre', 'ASC')
+            ->findAll();
+        return $this->response->setJSON($departamentos);
+    }
+
+    public function getMarcas()
+    {
+        $bienesModel = new \App\Models\BienesModel();
+        $marcas = $bienesModel->distinct()
+            ->select('marca')
+            ->where('marca IS NOT NULL')
+            ->orderBy('marca', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON($marcas);
+    }
+
+    // Obtener modelos únicos desde la tabla bienes
+    public function getModelos()
+    {
+        $bienesModel = new \App\Models\BienesModel();
+        $modelos = $bienesModel->distinct()
+            ->select('modelo')
+            ->where('modelo IS NOT NULL')
+            ->orderBy('modelo', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON($modelos);
     }
 }

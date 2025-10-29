@@ -25,7 +25,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    
+
 </head>
 
 <body id="page-top">
@@ -69,7 +69,7 @@
                 <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">General</h6>
-                       
+
                         <a class="collapse-item" href="<?= base_url("index.php/personas") ?>">Personal</a>
                     </div>
                 </div>
@@ -89,7 +89,8 @@
                         <a class="collapse-item" href="<?= base_url("index.php/bienes") ?>">Inventario</a>
                         <a class="collapse-item" href="<?= base_url('movimientos') ?>">Movimientos</a>
                         <a class="collapse-item" href="<?= base_url("index.php/baja") ?>">Baja</a>
-                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i class="fas fa-network-wired mr-1"></i> IPs</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i
+                                class="fas fa-network-wired mr-1"></i> IPs</a>
 
                     </div>
                 </div>
@@ -186,10 +187,11 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small user-nombre"><?= session('nombre') ?></span>
+                                <span
+                                    class="mr-2 d-none d-lg-inline text-gray-600 small user-nombre"><?= session('nombre') ?></span>
                                 <?php
-                                    $foto = session('foto') ?? null;
-                                    $imgSrc = $foto ? base_url('uploads/usuarios/' . $foto) : base_url('img/avatar-default.png');
+                                $foto = session('foto') ?? null;
+                                $imgSrc = $foto ? base_url('uploads/usuarios/' . $foto) : base_url('img/avatar-default.png');
                                 ?>
                                 <img class="img-profile rounded-circle" src="<?= $imgSrc ?>">
                             </a>
@@ -256,7 +258,8 @@
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
-                <div class="modal-body">Seleccione “Cerrar sesión” a continuación si está listo para finalizar su sesión actual.</div>
+                <div class="modal-body">Seleccione “Cerrar sesión” a continuación si está listo para finalizar su sesión
+                    actual.</div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
                     <a class="btn btn-primary" href="<?= base_url('/logout') ?>">Salir</a>
@@ -267,59 +270,64 @@
 
     <!-- Modal Perfil -->
     <div class="modal fade" id="modalPerfil" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">Mi Perfil</h5>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="row">
-            <!-- Columna Foto -->
-            <div class="col-md-4 text-center">
-                <?php
-                $foto = session('foto');
-                $avatar = $foto ? base_url('uploads/usuarios/' . $foto)
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Mi Perfil</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Columna Foto -->
+                        <div class="col-md-4 text-center">
+                            <?php
+                            $foto = session('foto');
+                            $avatar = $foto ? base_url('uploads/usuarios/' . $foto)
                                 : base_url('img/avatar-default.png');
-                ?>
-                <img id="previewFoto" src="<?= $avatar ?>" class="img-fluid rounded-circle mb-3" style="max-width:180px;">
-                <form id="formFoto" enctype="multipart/form-data">
-                <?= csrf_field() ?>
-                <input type="hidden" name="usuario_id" value="<?= session('usuario_id') ?>">
-                <div class="form-group">
-                    <label for="foto">Cambiar foto (JPG/PNG, máx 2MB)</label>
-                    <input id="inputFoto" type="file" name="foto" class="form-control-file" accept="image/*">
-                </div>
-                <button class="btn btn-primary btn-block" type="submit">Subir foto</button>
-                </form>
-            </div>
+                            ?>
+                            <img id="previewFoto" src="<?= $avatar ?>" class="img-fluid rounded-circle mb-3"
+                                style="max-width:180px;">
+                            <form id="formFoto" enctype="multipart/form-data">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="usuario_id" value="<?= session('usuario_id') ?>">
+                                <div class="form-group">
+                                    <label for="foto">Cambiar foto (JPG/PNG, máx 2MB)</label>
+                                    <input id="inputFoto" type="file" name="foto" class="form-control-file"
+                                        accept="image/*">
+                                </div>
+                                <button class="btn btn-primary btn-block" type="submit">Subir foto</button>
+                            </form>
+                        </div>
 
-            <!-- Columna Datos -->
-            <div class="col-md-8">
-                <form id="formDatos">
-                <?= csrf_field() ?>
-                <div class="form-group">
-                    <label>Usuario</label>
-                    <input type="text" class="form-control" value="<?= esc(session('usuario')) ?>" readonly>
+                        <!-- Columna Datos -->
+                        <div class="col-md-8">
+                            <form id="formDatos">
+                                <?= csrf_field() ?>
+                                <div class="form-group">
+                                    <label>Usuario</label>
+                                    <input type="text" class="form-control" value="<?= esc(session('usuario')) ?>"
+                                        readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre</label>
+                                    <input name="nombre" type="text" class="form-control"
+                                        value="<?= esc(session('nombre')) ?>" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Correo</label>
+                                    <input name="correo" type="email" class="form-control"
+                                        value="<?= esc(session('correo')) ?>">
+                                </div>
+                                <button class="btn btn-success" type="submit">Guardar cambios</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input name="nombre" type="text" class="form-control" value="<?= esc(session('nombre')) ?>" required>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                 </div>
-                <div class="form-group">
-                    <label>Correo</label>
-                    <input name="correo" type="email" class="form-control" value="<?= esc(session('correo')) ?>">
-                </div>
-                <button class="btn btn-success" type="submit">Guardar cambios</button>
-                </form>
             </div>
-            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
-        </div>
-    </div>
     </div>
 
 
@@ -334,10 +342,11 @@
     <!-- Cargar Bootstrap después de jQuery -->
     <script src="<?= base_url("./sb2/vendor/bootstrap/js/bootstrap.bundle.min.js") ?>"></script>
 
-    
+
 
     <!-- Cargar DataTables JavaScript después de jQuery -->
-    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" charset="utf8"
+        src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 
 
     <!-- Cargar otros scripts de plugins -->
@@ -349,269 +358,364 @@
 
     <!-- Scripts de Select2 (antes de tu script.js si lo usas) -->
 
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script>
-$(document).ready(function() {
-    // ==============================
-    // 📌 Inicializar DataTables
-    // ==============================
-    var table = $('#bienesTable').DataTable({
-        "language": {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
-        },
-        "order": [[5, "desc"]],
-        "responsive": true
-    });
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        var table; // variable global accesible desde otros scripts
 
-    // Mostrar / Ocultar filtros
-    $('#toggleFilters').on('click', function() {
-        $('#filterContainer').toggle();
-        $(this).text($('#filterContainer').is(':visible') ? 'Ocultar Filtros' : 'Mostrar Filtros');
-    });
+        $(document).ready(function () {
+            // ==============================
+            // 📌 Inicializar DataTable
+            // ==============================
+            table = $('#bienesTable').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+                },
+                order: [[0, "asc"]],
+                responsive: true,
+                orderCellsTop: true,
+                fixedHeader: true,
 
-    // Filtro por Rango de Fechas
-    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-        var fechaDesde = $('#filterFechaDesde').val();
-        var fechaHasta = $('#filterFechaHasta').val();
-        var fechaAdquisicion = data[6] || '';
+                // ✅ Se ejecuta cuando la tabla termina de inicializarse
+                initComplete: function () {
+                    var api = this.api();
 
-        if (fechaAdquisicion === '') return true;
+                    // ==============================
+                    // 🔽 Llenar selects dinámicos (marca, modelo, departamento)
+                    // ==============================
+                    api.columns([3, 4]).every(function () {
+                        var column = this;
+                        var select = $('select', column.header());
+                        var dataSet = [];
 
-        var fechaAdq = new Date(fechaAdquisicion);
-        var desde = fechaDesde ? new Date(fechaDesde) : null;
-        var hasta = fechaHasta ? new Date(fechaHasta) : null;
-
-        return (desde === null || fechaAdq >= desde) && (hasta === null || fechaAdq <= hasta);
-    });
-
-    $('#filterFechaDesde, #filterFechaHasta').on('change', function() {
-        table.draw();
-    });
-
-    $('#filterDescripcion').on('keyup', function() {
-        table.column(1).search(this.value).draw();
-    });
-
-    $('#filterEstado').on('change', function() {
-        table.column(5).search(this.value).draw();
-    });
-
-    $('#clearFilters').on('click', function() {
-        $('#filterFechaDesde, #filterFechaHasta, #filterDescripcion').val('');
-        $('#filterEstado').val('');
-        table.search('').columns().search('').draw();
-    });
-
-    // ==============================
-    // 📌 Autocompletar usuario
-    // ==============================
-    $('#usuario').on('input', function() {
-        $('#usuarioId').val('');
-    }).on('keyup', function() {
-        let usuario = $(this).val().trim();
-
-        if (usuario.length >= 3) {
-            var url = window.location.pathname.includes('movimientos') ?
-                "<?= base_url('movimientos/getUsuariosSugeridos'); ?>" :
-                "<?= base_url('bienes/getUsuariosSugeridos'); ?>";
-
-            $.ajax({
-                url: url,
-                method: "GET",
-                data: { usuario: usuario },
-                dataType: "json",
-                success: function(response) {
-                    $('#usuarioSuggestions').empty().hide();
-
-                    if (response.length > 0) {
-                        response.forEach(function(persona) {
-                            $('#usuarioSuggestions').append(
-                                `<li class="list-group-item suggestion-item" data-id="${persona.id}">${persona.nombre_completo}</li>`
-                            );
+                        // Recorrer y añadir opciones únicas
+                        column.data().each(function (d) {
+                            if (d && !dataSet.includes(d)) {
+                                dataSet.push(d);
+                            }
                         });
-                        $('#usuarioSuggestions').show();
-                    }
+
+                        // Ordenar alfabéticamente
+                        dataSet.sort();
+
+                        // Agregar opciones
+                        dataSet.forEach(function (d) {
+                            select.append('<option value="' + d + '">' + d + '</option>');
+                        });
+
+                        // Escuchar cambios en el select
+                        select.on('change', function () {
+                            var val = $.fn.dataTable.util.escapeRegex($(this).val());
+                            column.search(val ? '^' + val + '$' : '', true, false).draw();
+                        });
+                    });
                 }
             });
-        } else {
-            $('#usuarioSuggestions').hide();
-        }
-    });
 
-    $(document).on('click', '.suggestion-item', function() {
-        var nombreUsuario = $(this).text();
-        var idUsuario = $(this).data('id');
-        $('#usuario').val(nombreUsuario);
-        $('#usuarioId').val(idUsuario);
-        $('#usuarioSuggestions').hide();
-    });
-
-    $('form').on('submit', function(event) {
-        if ($('#usuario').val().trim() === '' || $('#usuarioId').val() === '') {
-            alert('Debe seleccionar un usuario válido.');
-            event.preventDefault();
-        }
-    });
-
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('#usuarioSuggestions, #usuario').length) {
-            $('#usuarioSuggestions').hide();
-        }
-    });
-
-    // ==============================
-    // 📌 Bienes con Select2 (asignar y retirar)
-    // ==============================
-    function initSelect2(selector, tipo, listaId, inputName) {
-        $(selector).select2({
-            placeholder: 'Buscar bien por código o descripción',
-            ajax: {
-                url: '<?= base_url("movimientos/buscarBienes") ?>',
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        q: params.term || '',
-                        tipo: tipo,
-                        persona: $('#usuarioId').val() // 👈 filtra por usuario seleccionado
-                    };
-                },
-                processResults: function (data) {
-                    return data;
+            // ==============================
+            // 🔍 Filtros por columna (segunda fila del thead)
+            // ==============================
+            $('#bienesTable thead tr:eq(1) th').each(function (i) {
+                var input = $('input, select', this);
+                if (input.length) {
+                    $(input).on('keyup change', function () {
+                        var val = this.value;
+                        table.column(i).search(val).draw();
+                    });
                 }
-            },
-            templateResult: function (bien) {
-                if (!bien.id) return bien.text;
-                let estado = bien.estado ? `📌 ${bien.estado}` : '';
-                return $(`<span>${bien.text}<br><small>${estado}</small></span>`);
-            }
+            });
+
+            // ==============================
+            // 📅 Filtro por rango de fechas (externo)
+            // ==============================
+            $.fn.dataTable.ext.search.push(function (settings, data) {
+                var fechaDesde = $('#filterFechaDesde').val();
+                var fechaHasta = $('#filterFechaHasta').val();
+                var fechaCompra = data[8] || ''; // Columna 8 = Fecha de compra
+
+                if (fechaCompra === '') return true;
+                var fecha = new Date(fechaCompra);
+                var desde = fechaDesde ? new Date(fechaDesde) : null;
+                var hasta = fechaHasta ? new Date(fechaHasta) : null;
+
+                return (desde === null || fecha >= desde) && (hasta === null || fecha <= hasta);
+            });
+
+            $('#filterFechaDesde, #filterFechaHasta').on('change', function () {
+                table.draw();
+            });
+
+            // ==============================
+            // 🎯 Filtros externos adicionales
+            // ==============================
+            $('#filterDescripcion').on('keyup', function () {
+                table.column(2).search(this.value).draw();
+            });
+
+            $('#filterEstado').on('change', function () {
+                table.column(7).search(this.value).draw();
+            });
+
+            // ==============================
+            // ♻️ Limpiar filtros
+            // ==============================
+            $('#clearFilters').on('click', function () {
+                $('#filterFechaDesde, #filterFechaHasta, #filterDescripcion').val('');
+                $('#filterEstado').val('');
+                table.search('').columns().search('').draw();
+            });
+
+            // ==============================
+            // 👁️ Mostrar / Ocultar filtros externos
+            // ==============================
+            $('#toggleFilters').on('click', function () {
+                $('#filterContainer').toggle();
+                $(this).text($('#filterContainer').is(':visible') ? 'Ocultar Filtros' : 'Mostrar Filtros');
+            });
         });
 
-        // Añadir a la lista
-        $(selector).on('select2:select', function (e) {
-            let data = e.params.data;
-            if ($('#bien_' + listaId + '_' + data.id).length) return;
+        // Cargar lista de departamentos desde el backend
+        function cargarFiltrosDinamicos() {
+            const baseUrl = "<?= base_url() ?>";
 
-            $('#' + listaId).append(`
-                <li class="list-group-item d-flex justify-content-between align-items-center" 
+            // 🔹 Cargar Marcas
+            $.getJSON(baseUrl + '/bienes/marcas', function (data) {
+                let select = $('#bienesTable thead tr:eq(1) th:eq(3) select');
+                select.empty().append('<option value="">Todos</option>');
+                data.forEach(item => {
+                    if (item.marca) {
+                        select.append(`<option value="${item.marca}">${item.marca}</option>`);
+                    }
+                });
+            });
+
+            // 🔹 Cargar Modelos
+            $.getJSON(baseUrl + '/bienes/modelos', function (data) {
+                let select = $('#bienesTable thead tr:eq(1) th:eq(4) select');
+                select.empty().append('<option value="">Todos</option>');
+                data.forEach(item => {
+                    if (item.modelo) {
+                        select.append(`<option value="${item.modelo}">${item.modelo}</option>`);
+                    }
+                });
+            });
+
+            // 🔹 Cargar Departamentos
+            $.getJSON(baseUrl + '/bienes/departamentos', function (data) {
+                let select = $('#bienesTable thead tr:eq(1) th:eq(6) select');
+                select.empty().append('<option value="">Todos</option>');
+                data.forEach(dep => {
+                    select.append(`<option value="${dep.nombre}">${dep.nombre}</option>`);
+                });
+            });
+        }
+
+        // Llamar cuando el DOM esté listo
+        $(document).ready(function () {
+            cargarFiltrosDinamicos();
+        });
+
+    </script>
+
+    <!-- ============================== -->
+    <!-- 👤 Script de perfil (foto y datos) -->
+    <!-- ============================== -->
+    <script>
+        const BASE_URL = "<?= base_url() ?>";
+
+        $(function () {
+            // Preview de foto
+            $('#inputFoto').on('change', function () {
+                var file = this.files[0];
+                if (!file) return;
+
+                if (file.size > 2 * 1024 * 1024) {
+                    Swal.fire('Error', 'Archivo demasiado grande (máx 2MB)', 'error');
+                    $(this).val('');
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#previewFoto').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Subir foto por AJAX
+            $('#formFoto').on('submit', function (e) {
+                e.preventDefault();
+                var fd = new FormData(this);
+                $.ajax({
+                    url: BASE_URL + '/perfil/foto',
+                    method: 'POST',
+                    data: fd,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'json',
+                    success: function (resp) {
+                        if (resp.ok) {
+                            Swal.fire('Listo', resp.msg, 'success');
+                            var imgTop = $('img.img-profile');
+                            if (imgTop.length) {
+                                imgTop.attr('src', resp.url + '?t=' + new Date().getTime());
+                            }
+                        } else {
+                            Swal.fire('Error', resp.msg || 'Error al subir', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', 'Error al subir (ver consola)', 'error');
+                        console.error(xhr);
+                    }
+                });
+            });
+
+            // Guardar datos perfil
+            $('#formDatos').on('submit', function (e) {
+                e.preventDefault();
+                var data = $(this).serialize();
+                $.ajax({
+                    url: BASE_URL + '/perfil/guardar',
+                    method: 'POST',
+                    data,
+                    dataType: 'json',
+                    success: function (resp) {
+                        if (resp.ok) {
+                            Swal.fire('Listo', resp.msg, 'success').then(() => {
+                                $('span.user-nombre').text($('input[name="nombre"]').val());
+                            });
+                        } else {
+                            Swal.fire('Error', resp.msg || 'No se pudo actualizar', 'error');
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error', 'Error al guardar (ver consola)', 'error');
+                        console.error(xhr);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- ============================== -->
+    <!-- 🔄 Script de asignación / retiro (Select2) -->
+    <!-- ============================== -->
+    <script>
+        $(document).ready(function () {
+            // Autocompletar usuario
+            $('#usuario').on('input', function () {
+                $('#usuarioId').val('');
+            }).on('keyup', function () {
+                let usuario = $(this).val().trim();
+                if (usuario.length >= 3) {
+                    var url = window.location.pathname.includes('movimientos')
+                        ? "<?= base_url('movimientos/getUsuariosSugeridos'); ?>"
+                        : "<?= base_url('bienes/getUsuariosSugeridos'); ?>";
+                    $.ajax({
+                        url: url,
+                        method: "GET",
+                        data: { usuario },
+                        dataType: "json",
+                        success: function (response) {
+                            $('#usuarioSuggestions').empty().hide();
+                            if (response.length > 0) {
+                                response.forEach(function (persona) {
+                                    $('#usuarioSuggestions').append(
+                                        `<li class="list-group-item suggestion-item" data-id="${persona.id}">
+                                    ${persona.nombre_completo}
+                                </li>`
+                                    );
+                                });
+                                $('#usuarioSuggestions').show();
+                            }
+                        }
+                    });
+                } else {
+                    $('#usuarioSuggestions').hide();
+                }
+            });
+
+            $(document).on('click', '.suggestion-item', function () {
+                var nombreUsuario = $(this).text();
+                var idUsuario = $(this).data('id');
+                $('#usuario').val(nombreUsuario);
+                $('#usuarioId').val(idUsuario);
+                $('#usuarioSuggestions').hide();
+            });
+
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#usuarioSuggestions, #usuario').length) {
+                    $('#usuarioSuggestions').hide();
+                }
+            });
+
+            $('form').on('submit', function (event) {
+                if ($('#usuario').val().trim() === '' || $('#usuarioId').val() === '') {
+                    alert('Debe seleccionar un usuario válido.');
+                    event.preventDefault();
+                }
+            });
+
+            // Inicializar Select2
+            function initSelect2(selector, tipo, listaId, inputName) {
+                $(selector).select2({
+                    placeholder: 'Buscar bien por código o descripción',
+                    ajax: {
+                        url: '<?= base_url("movimientos/buscarBienes") ?>',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term || '',
+                                tipo,
+                                persona: $('#usuarioId').val()
+                            };
+                        },
+                        processResults: function (data) {
+                            return data;
+                        },
+                        templateResult: function (bien) {
+                            if (!bien.id) return bien.text;
+                            let estado = bien.estado ? `📌 ${bien.estado}` : '';
+                            return $(`<span>${bien.text}<br><small>${estado}</small></span>`);
+                        }
+                    }
+                });
+
+                $(selector).on('select2:select', function (e) {
+                    let data = e.params.data;
+                    if ($('#bien_' + listaId + '_' + data.id).length) return;
+                    $('#' + listaId).append(`
+                <li class="list-group-item d-flex justify-content-between align-items-center"
                     id="bien_${listaId}_${data.id}">
                     ${data.text}
                     <input type="hidden" name="${inputName}[]" value="${data.id}">
-                    <button type="button" class="btn btn-sm btn-danger remove-bien" 
+                    <button type="button" class="btn btn-sm btn-danger remove-bien"
                         data-id="${data.id}" data-lista="${listaId}">❌</button>
                 </li>
             `);
+                });
+            }
+
+            initSelect2('#buscador_asignar', 'asignacion', 'lista_asignar', 'bienes_asignar');
+            initSelect2('#buscador_retirar', 'retiro', 'lista_retirar', 'bienes_retirar');
+
+            $(document).on('click', '.remove-bien', function () {
+                let id = $(this).data('id');
+                let lista = $(this).data('lista');
+                $('#bien_' + lista + '_' + id).remove();
+            });
+
+            $('#tipo_movimiento').change(function () {
+                let tipo = $(this).val();
+                $('#contenedor_asignar').toggle(tipo === 'asignacion' || tipo === 'cambio');
+                $('#contenedor_retirar').toggle(tipo === 'retiro' || tipo === 'cambio');
+            }).trigger('change');
         });
-    }
+    </script>
 
-    // Inicializar
-    initSelect2('#buscador_asignar', 'asignacion', 'lista_asignar', 'bienes_asignar');
-    initSelect2('#buscador_retirar', 'retiro', 'lista_retirar', 'bienes_retirar');
-
-    // Eliminar item
-    $(document).on('click', '.remove-bien', function () {
-        let id = $(this).data('id');
-        let lista = $(this).data('lista');
-        $('#bien_' + lista + '_' + id).remove();
-    });
-
-    // Mostrar/ocultar según tipo
-    $('#tipo_movimiento').change(function () {
-        let tipo = $(this).val();
-        $('#contenedor_asignar').toggle(tipo === 'asignacion' || tipo === 'cambio');
-        $('#contenedor_retirar').toggle(tipo === 'retiro' || tipo === 'cambio');
-    }).trigger('change');
-});
-</script>
-
-
-<script>
-const BASE_URL = "<?= base_url() ?>";
-
-$(function(){
-
-  // Preview al seleccionar archivo
-  $('#inputFoto').on('change', function(e){
-      var file = this.files[0];
-      if (!file) return;
-
-      if (file.size > 2 * 1024 * 1024) {
-          Swal.fire('Error', 'Archivo demasiado grande (máx 2MB)', 'error');
-          $(this).val('');
-          return;
-      }
-
-      var reader = new FileReader();
-      reader.onload = function(e) {
-          $('#previewFoto').attr('src', e.target.result);
-      };
-      reader.readAsDataURL(file);
-  });
-
-  // Subir foto (AJAX)
-  $('#formFoto').on('submit', function(e){
-      e.preventDefault();
-      var form = document.getElementById('formFoto');
-      var fd = new FormData(form);
-
-      $.ajax({
-          url: BASE_URL + '/perfil/foto',
-          method: 'POST',
-          data: fd,
-          processData: false,
-          contentType: false,
-          dataType: 'json',
-          success: function(resp){
-              if (resp.ok) {
-                  Swal.fire('Listo', resp.msg, 'success');
-                  // Actualizar imagen del topbar (si usas session foto)
-                  var imgTop = $('img.img-profile');
-                  if (imgTop.length) {
-                      imgTop.attr('src', resp.url + '?t=' + new Date().getTime());
-                  }
-              } else {
-                  Swal.fire('Error', resp.msg || 'Error al subir', 'error');
-              }
-          },
-          error: function(xhr){
-              Swal.fire('Error', 'Error al subir (ver consola)', 'error');
-              console.error(xhr);
-          }
-      });
-  });
-
-  // Guardar datos (AJAX)
-  $('#formDatos').on('submit', function(e){
-      e.preventDefault();
-      var data = $(this).serialize();
-
-      $.ajax({
-          url: BASE_URL + '/perfil/guardar',
-          method: 'POST',
-          data: data,
-          dataType: 'json',
-          success: function(resp){
-              if (resp.ok) {
-                  Swal.fire('Listo', resp.msg, 'success').then(()=> {
-                      // Actualizar nombre del topbar
-                      $('span.user-nombre').text($('input[name="nombre"]').val());
-                  });
-              } else {
-                  Swal.fire('Error', resp.msg || 'No se pudo actualizar', 'error');
-              }
-          },
-          error: function(xhr){
-              Swal.fire('Error', 'Error al guardar (ver consola)', 'error');
-              console.error(xhr);
-          }
-      });
-  });
-
-});
-</script>
-
-<?= $this->renderSection('scripts_datatable_ip') ?>
-<?= $this->renderSection('scripts') ?>
+    <?= $this->renderSection('scripts_datatable_ip') ?>
+    <?= $this->renderSection('scripts') ?>
 </body>
 
 </html>

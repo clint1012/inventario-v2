@@ -49,6 +49,9 @@ $routes->get('bienes/reporte_bienes', 'Bienes::reporte_bienes', ['filter' => 'au
 $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 'auth']);
 $routes->post('bienes/desactivar', 'Bienes::desactivar', ['filter' => 'auth']);
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
+$routes->get('bienes/departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);
+$routes->get('bienes/marcas', 'Bienes::getMarcas', ['filter'=>'auth'] );
+$routes->get('bienes/modelos', 'Bienes::getModelos', ['filter'=>'auth'] );
 
 
 // ======================================================
