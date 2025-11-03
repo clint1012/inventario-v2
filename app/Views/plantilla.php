@@ -71,6 +71,7 @@
                         <h6 class="collapse-header">General</h6>
 
                         <a class="collapse-item" href="<?= base_url("index.php/personas") ?>">Personal</a>
+                         <a class="collapse-item" href="<?= base_url("index.php/proveedor") ?>">Proveedores</a>
                     </div>
                 </div>
             </li>
@@ -336,6 +337,10 @@
     <!-- Cargar jQuery localmente (asegúrate de que sea la versión correcta) -->
     <script src="<?= base_url("./sb2/vendor/jquery/jquery.min.js") ?>"></script>
 
+    <!-- jQuery UI (necesario para .autocomplete) -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
     <!-- Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
 
@@ -364,7 +369,7 @@
 
         $(document).ready(function () {
             // ==============================
-            // 📌 Inicializar DataTable
+            // Inicializar DataTable
             // ==============================
             table = $('#bienesTable').DataTable({
                 language: {
@@ -375,44 +380,45 @@
                 orderCellsTop: true,
                 fixedHeader: true,
 
-                // ✅ Se ejecuta cuando la tabla termina de inicializarse
+                columnDefs: [
+                    { targets: [5, 9], visible: false, searchable: true }
+                    // 🔹 5 = "Serie", 9 = "Fecha de compra"
+                ],
+
                 initComplete: function () {
                     var api = this.api();
 
                     // ==============================
-                    // 🔽 Llenar selects dinámicos (marca, modelo, departamento)
+                    // Llenar selects dinámicos (marca, modelo, local, departamento)
                     // ==============================
-                    api.columns([3, 4]).every(function () {
+                    api.columns([3, 4, 5, 6]).every(function () {
                         var column = this;
                         var select = $('select', column.header());
                         var dataSet = [];
 
-                        // Recorrer y añadir opciones únicas
                         column.data().each(function (d) {
-                            if (d && !dataSet.includes(d)) {
-                                dataSet.push(d);
-                            }
+                            if (d && !dataSet.includes(d)) dataSet.push(d);
                         });
 
-                        // Ordenar alfabéticamente
                         dataSet.sort();
-
-                        // Agregar opciones
                         dataSet.forEach(function (d) {
                             select.append('<option value="' + d + '">' + d + '</option>');
                         });
 
-                        // Escuchar cambios en el select
+                        // 🔹 Evento al cambiar un filtro de columna
                         select.on('change', function () {
                             var val = $.fn.dataTable.util.escapeRegex($(this).val());
                             column.search(val ? '^' + val + '$' : '', true, false).draw();
+
+                            // 🔁 Actualizar filtros dependientes tras aplicar filtro
+                            actualizarFiltrosDependientes();
                         });
                     });
                 }
             });
 
             // ==============================
-            // 🔍 Filtros por columna (segunda fila del thead)
+            //  Filtros por columna (segunda fila del thead)
             // ==============================
             $('#bienesTable thead tr:eq(1) th').each(function (i) {
                 var input = $('input, select', this);
@@ -420,12 +426,13 @@
                     $(input).on('keyup change', function () {
                         var val = this.value;
                         table.column(i).search(val).draw();
+                        actualizarFiltrosDependientes(); // 🔁 actualiza dependientes también aquí
                     });
                 }
             });
 
             // ==============================
-            // 📅 Filtro por rango de fechas (externo)
+            // Filtro por rango de fechas (externo)
             // ==============================
             $.fn.dataTable.ext.search.push(function (settings, data) {
                 var fechaDesde = $('#filterFechaDesde').val();
@@ -445,61 +452,116 @@
             });
 
             // ==============================
-            // 🎯 Filtros externos adicionales
+            // Filtros externos adicionales
             // ==============================
             $('#filterDescripcion').on('keyup', function () {
                 table.column(2).search(this.value).draw();
+                actualizarFiltrosDependientes();
             });
 
             $('#filterEstado').on('change', function () {
                 table.column(7).search(this.value).draw();
+                actualizarFiltrosDependientes();
             });
 
             // ==============================
-            // ♻️ Limpiar filtros
+            // Limpiar filtros
             // ==============================
-            $('#clearFilters').on('click', function () {
+            $(document).on('click', '#clearFilters', function () {
+                console.log('🧹 Limpiando filtros...');
+
                 $('#filterFechaDesde, #filterFechaHasta, #filterDescripcion').val('');
                 $('#filterEstado').val('');
-                table.search('').columns().search('').draw();
+
+                $('#bienesTable thead tr:eq(1) th').each(function () {
+                    var $el = $('input, select', this);
+                    if ($el.length) {
+                        if ($el.is('select')) {
+                            $el.prop('selectedIndex', 0).trigger('change');
+                        } else {
+                            $el.val('').trigger('keyup').trigger('change');
+                        }
+                    }
+                });
+
+                if (typeof table !== 'undefined' && table) {
+                    table.search('').columns().search('').draw();
+                }
+
+                // 🔁 Recalcular los selects dependientes después de limpiar
+                setTimeout(actualizarFiltrosDependientes, 300);
             });
 
             // ==============================
-            // 👁️ Mostrar / Ocultar filtros externos
+            // Mostrar / Ocultar filtros externos
             // ==============================
             $('#toggleFilters').on('click', function () {
                 $('#filterContainer').toggle();
                 $(this).text($('#filterContainer').is(':visible') ? 'Ocultar Filtros' : 'Mostrar Filtros');
             });
+
+            // ==============================
+            // Autocompletado descripcion
+            // ==============================
+            $('#bienesTable thead tr:eq(1) th:eq(2) input').autocomplete({
+                minLength: 3,
+                source: function (request, response) {
+                    $.ajax({
+                        url: "<?= base_url('bienes/buscarDescripcion') ?>",
+                        dataType: "json",
+                        data: { term: request.term },
+                        success: function (data) {
+                            response(data);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    table.column(2).search(ui.item.value).draw();
+                    actualizarFiltrosDependientes();
+                }
+            });
+
+            // ==============================
+            // Cargar lista de filtros desde backend
+            // ==============================
+            cargarFiltrosDinamicos();
+
+            // 🔁 Actualiza dependientes tras cada renderizado del DataTable
+            table.on('draw', function () {
+                actualizarFiltrosDependientes();
+            });
         });
 
-        // Cargar lista de departamentos desde el backend
+        // =========================================================
+        // Cargar filtros dinámicos por AJAX
+        // =========================================================
         function cargarFiltrosDinamicos() {
             const baseUrl = "<?= base_url() ?>";
 
-            // 🔹 Cargar Marcas
             $.getJSON(baseUrl + '/bienes/marcas', function (data) {
                 let select = $('#bienesTable thead tr:eq(1) th:eq(3) select');
                 select.empty().append('<option value="">Todos</option>');
                 data.forEach(item => {
-                    if (item.marca) {
-                        select.append(`<option value="${item.marca}">${item.marca}</option>`);
-                    }
+                    if (item.marca) select.append(`<option value="${item.marca}">${item.marca}</option>`);
                 });
             });
 
-            // 🔹 Cargar Modelos
             $.getJSON(baseUrl + '/bienes/modelos', function (data) {
                 let select = $('#bienesTable thead tr:eq(1) th:eq(4) select');
                 select.empty().append('<option value="">Todos</option>');
                 data.forEach(item => {
-                    if (item.modelo) {
-                        select.append(`<option value="${item.modelo}">${item.modelo}</option>`);
-                    }
+                    if (item.modelo) select.append(`<option value="${item.modelo}">${item.modelo}</option>`);
                 });
             });
 
-            // 🔹 Cargar Departamentos
+            $.getJSON(baseUrl + '/bienes/locales', function (data) {
+                let select = $('#bienesTable thead tr:eq(1) th:eq(5) select');
+                select.empty().append('<option value="">Todos</option>');
+                data.forEach(local => {
+                    select.append(`<option value="${local.nombre}">${local.nombre}</option>`);
+                });
+            });
+
             $.getJSON(baseUrl + '/bienes/departamentos', function (data) {
                 let select = $('#bienesTable thead tr:eq(1) th:eq(6) select');
                 select.empty().append('<option value="">Todos</option>');
@@ -509,15 +571,58 @@
             });
         }
 
-        // Llamar cuando el DOM esté listo
-        $(document).ready(function () {
-            cargarFiltrosDinamicos();
-        });
+        // ==================================================
+        // 🔁 Filtros dependientes (discriminantes)
+        // ==================================================
+        function actualizarFiltrosDependientes() {
+            if (typeof table === 'undefined' || !table.columns) return;
+
+            // Índices reales del DataTable (ajusta si cambia el orden)
+            const selectsCols = [3, 4, 6, 7]; // Marca, Modelo, Local, Departamento
+
+            selectsCols.forEach(function (colIdx) {
+                const column = table.column(colIdx);
+
+                // Buscar el select correcto (visible o no)
+                const visibleIndex = column.index('visible');
+                let select = $('#bienesTable thead tr:eq(1) th:visible').eq(visibleIndex).find('select');
+                if (!select.length) {
+                    select = $('#bienesTable thead tr:eq(1) th').eq(colIdx).find('select');
+                }
+                if (!select.length) return;
+
+                // Guardar valor seleccionado
+                const valActual = select.val();
+
+                // ✅ Tomar datos SOLO de filas visibles (filtradas actualmente)
+                const colData = column.data({ search: 'applied' }).toArray();
+
+                // Normalizar (sin nulos ni vacíos)
+                const valores = Array.from(new Set(
+                    colData.map(v => (v ? v.trim() : '')).filter(v => v !== '')
+                )).sort();
+
+                // Rellenar el select
+                select.empty().append('<option value="">Todos</option>');
+                valores.forEach(v => select.append(`<option value="${v}">${v}</option>`));
+
+                // Restaurar selección si sigue existiendo
+                if (valActual && select.find(`option[value="${valActual}"]`).length) {
+                    select.val(valActual);
+                } else {
+                    select.val('');
+                }
+            });
+        }
+
+
+
 
     </script>
 
+
     <!-- ============================== -->
-    <!-- 👤 Script de perfil (foto y datos) -->
+    <!--  Script de perfil (foto y datos) -->
     <!-- ============================== -->
     <script>
         const BASE_URL = "<?= base_url() ?>";
@@ -598,7 +703,7 @@
     </script>
 
     <!-- ============================== -->
-    <!-- 🔄 Script de asignación / retiro (Select2) -->
+    <!--  Script de asignación / retiro (Select2) -->
     <!-- ============================== -->
     <script>
         $(document).ready(function () {

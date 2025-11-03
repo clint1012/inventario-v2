@@ -17,80 +17,48 @@
     <a href="<?= base_url('bienes/new') ?>" class="btn btn-success">
         Agregar
     </a>
-    <!-- Botón para la subida masiva -->
-    <button class="btn btn-primary" data-toggle="modal" data-target="#modalSubidaMasiva">Subida masiva</button>
 
-    <!-- Genera Reporte -->
-    <a href="<?= base_url('bienes/reporte_bienes') ?>" class="btn btn-danger" target="_blank">
-        Generar PDF
-    </a>
-</div>
-
-
-<button id="toggleFilters" class="btn btn-secondary mb-3">Mostrar Filtros</button>
-<div id="filterContainer" class="card p-3 mb-3" style="display: none;">
-    <div class="row mb-3">
-        <!-- Filtro por Fecha Desde -->
-        <div class="col-md-4">
-            <label for="filterFechaDesde" class="form-label">Filtrar por Fecha Desde:</label>
-            <input type="date" id="filterFechaDesde" class="form-control">
-        </div>
-        <!-- Filtro por Fecha Hasta -->
-        <div class="col-md-4">
-            <label for="filterFechaHasta" class="form-label">Filtrar por Fecha Hasta:</label>
-            <input type="date" id="filterFechaHasta" class="form-control">
-        </div>
-        <!-- Filtro por Descripción -->
-        <div class="col-md-4">
-            <label for="filterDescripcion" class="form-label">Filtrar por Descripción:</label>
-            <input type="text" id="filterDescripcion" class="form-control" placeholder="Buscar descripción">
-        </div>
-    </div>
-    <div class="row mb-3">
-        <!-- Filtro por Estado -->
-        <div class="col-md-4">
-            <label for="filterEstado" class="form-label">Filtrar por Estado:</label>
-            <select id="filterEstado" class="form-control">
-                <option value="">Todos</option>
-                <option value="mantenimiento">Mantenimiento</option>
-                <option value="regular">Regular</option>
-                <option value="bueno">Bueno</option>
-                <option value="nuevo">Nuevo</option>
-                <option value="malo">Malo</option>
-            </select>
-        </div>
-    </div>
-    <button id="clearFilters" class="btn btn-warning">Limpiar Filtros</button>
+    <!-- <button id="btnGenerarPDF" class="btn btn-danger">
+        <i class="fas fa-file-pdf"></i> Generar PDF
+    </button> -->
 </div>
 
 
 <table class="table table-hover table-bordered my-3 mb-4 mt-5" id="bienesTable" aria-describedby="titulo">
     <thead class="table-dark">
         <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Código patrimonial</th>
-            <th scope="col">Descripción</th>
-            <th scope="col">Marca</th>
-            <th scope="col">Modelo</th>
-            <!--<th scope="col">Serie</th>-->
-            <th scope="col">Departamento</th>
-            <th scope="col">Estado</th>
-            <th scope="col">Fecha de compra</th>
-            <th scope="col">Estado de garantía</th>
-            <th scope="col">Usuario</th>
-            <th scope="col">Opciones</th>
+            <th>ID</th>
+            <th>Código patrimonial</th>
+            <th>Descripción</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Serie</th>
+            <th>Local</th>
+            <th>Departamento</th>
+            <th>Estado</th>
+            <th>Fecha de compra</th>
+            <th>Estado de garantía</th>
+            <th>Usuario</th>
+            <th>Opciones</th>
         </tr>
         <tr>
             <th></th>
             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar código"></th>
             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar descripción"></th>
+            <th>
+                <select class="form-control form-control-sm">
+                    <option value="">Todos</option>
+                </select>
+            </th>
+            <th>
+                <select class="form-control form-control-sm">
+                    <option value="">Todos</option>
+                </select>
+            </th>
+            <th><input type="text" class="form-control form-control-sm" placeholder="Buscar serie"></th>
             <th><select class="form-control form-control-sm">
                     <option value="">Todos</option>
                 </select></th>
-            <th><select class="form-control form-control-sm">
-                    <option value="">Todos</option>
-                </select></th>
-            <!--<th><input type="text" class="form-control form-control-sm" placeholder="Buscar serie"></th>-->
             <th><select class="form-control form-control-sm">
                     <option value="">Todos</option>
                 </select></th>
@@ -116,32 +84,41 @@
                 </select>
             </th>
             <th><input type="text" class="form-control form-control-sm" placeholder="Buscar usuario"></th>
-            <th></th>
+            <th>
+                <button id="clearFilters" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-eraser"></i> Limpiar filtros
+                </button>
+            </th>
         </tr>
     </thead>
+
     <tbody>
-        <?php foreach ($bienes as $bienes): ?>
+        <?php foreach ($bienes as $b): ?>
             <tr>
-                <td><?= $bienes['id'] ?></td>
-                <td><?= $bienes['cod_patrimonial'] ?></td>
-                <td><?= $bienes['descripcion'] ?></td>
-                <td><?= $bienes['marca'] ?></td>
-                <td><?= $bienes['modelo'] ?></td>
-                
-                <td><?= $bienes['nombre_departamento'] ?></td>
-                <td><?= $bienes['estado'] ?></td>
-                <td><?= $bienes['fecha_adquisicion'] ?></td>
-                <td><?= $bienes['estado_garantia'] ?></td>
-                <td><?= $bienes['nombre_persona'] ?></td>
+                <td><?= $b['id'] ?></td>
+                <td><?= $b['cod_patrimonial'] ?></td>
+                <td><?= $b['descripcion'] ?></td>
+                <td><?= $b['marca'] ?></td>
+                <td><?= $b['modelo'] ?></td>
+                <td><?= $b['serie'] ?></td>
+                <td><?= $b['nombre_local'] ?? '' ?></td>
+                <td><?= $b['nombre_departamento'] ?></td>
+                <td><?= $b['estado'] ?></td>
+                <td><?= $b['fecha_adquisicion'] ?></td>
+                <td><?= $b['estado_garantia'] ?></td>
+                <td><?= $b['nombre_persona'] ?></td>
                 <td>
-                    <a href="<?= base_url('bienes/' . $bienes['id'] . '/edit') ?>"
+                    <a href="<?= base_url('bienes/' . $b['id'] . '/edit') ?>"
                         class="btn btn-warning btn-sm me-2 mb-1">Editar</a>
-                    <a href="<?= base_url('bienes/' . $bienes['id']) ?>" class="btn btn-warning btn-sm me-2">Ver</a>
-                    <a href="#" onclick="abrirModalBaja(<?= $bienes['id'] ?>)" class="btn btn-danger btn-sm me-2">Baja</a>
+                    <a href="<?= base_url('bienes/' . $b['id']) ?>" class="btn btn-warning btn-sm me-2">Ver</a>
+                    <a href="#" onclick="abrirModalBaja(<?= $b['id'] ?>)" class="btn btn-danger btn-sm me-2"> Dar de
+                        baja</a>
                 </td>
-            </tr> <?php endforeach; ?>
+            </tr>
+        <?php endforeach; ?>
     </tbody>
 </table>
+
 
 <!-- Modal para dar de baja un bien -->
 <div class="modal fade" id="modalBaja" tabindex="-1" role="dialog" aria-labelledby="modalBajaLabel" aria-hidden="true">
@@ -186,35 +163,6 @@
     </div>
 </div>
 
-<!-- Modal para subida masiva -->
-<div class="modal fade" id="modalSubidaMasiva" tabindex="-1" role="dialog" aria-labelledby="modalSubidaMasivaLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalSubidaMasivaLabel">Subida Masiva de Bienes</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="<?= base_url('bienes/subida_masiva') ?>" method="post" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="archivo" class="form-label">Seleccione el archivo (CSV o Excel)</label>
-                        <input type="file" class="form-control" id="archivo" name="archivo" accept=".csv, .xls, .xlsx"
-                            required>
-                    </div>
-                    <small class="text-muted">El archivo debe tener los campos: Código Patrimonial, Descripción, Marca,
-                        Modelo, Departamento, Estado, etc.</small>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Subir</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 
 <script>
@@ -228,5 +176,6 @@
         $('#modalBaja').modal('show'); // Mostrar el modal 
     } 
 </script>
+
 
 <?= $this->endSection(); ?>

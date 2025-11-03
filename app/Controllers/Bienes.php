@@ -32,9 +32,14 @@ class Bienes extends BaseController
         $bienesModel = new BienesModel();
         $departamentosModel = new DepartamentosModel();
         $personasModel = new PersonasModel();
+        $localesModel = new LocalesModel();
 
         // Obtener todos los bienes
         $bienes = $bienesModel->where('estado !=', 'retirado')->findAll();
+
+        // Obtener todos los locales
+        $locales = $localesModel->findAll();
+        $localesArray = array_column($locales, 'nombre', 'id');
 
         // Obtener los departamentos
         $departamentos = $departamentosModel->findAll();
@@ -49,6 +54,7 @@ class Bienes extends BaseController
         foreach ($bienes as &$bien) {
             $bien['nombre_departamento'] = $departamentosArray[$bien['id_departamento']] ?? 'Desconocido';
             $bien['nombre_persona'] = $personasArray[$bien['id_personas']] ?? 'No asignado';
+            $bien['nombre_local'] = $localesArray[$bien['id_locales']] ?? 'Desconocido';
         }
 
         // Pasar los datos a la vista
@@ -433,68 +439,7 @@ class Bienes extends BaseController
         return $this->response->setJSON($personas);
     }
 
-    public function reporte_bienes()
-    {
-        // Verificar el uso de memoria antes de generar el PDF (solo en desarrollo)
-        if (ENVIRONMENT !== 'production') {
-            echo "Memoria antes de generar el PDF: " . memory_get_usage() . " bytes<br>";
-        }
-
-        try {
-            // Cargar la librería DomPDF
-            $options = new \Dompdf\Options();
-            $options->set('isHtml5ParserEnabled', true);
-            $options->set('isPhpEnabled', true);
-            $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'Arial');
-
-            $dompdf = new \Dompdf\Dompdf($options);
-
-            // Obtener los bienes de la base de datos con un filtro opcional
-            $bienesModel = new \App\Models\BienesModel();
-
-            // Puedes incluir filtros como el estado o un rango de fechas
-            $estado = $this->request->getVar('estado');  // Ejemplo de filtro por estado
-            $fechaInicio = $this->request->getVar('fecha_inicio');
-            $fechaFin = $this->request->getVar('fecha_fin');
-
-            // Configurar los filtros
-            if ($estado) {
-                $bienesModel->where('estado', $estado);
-            }
-
-            if ($fechaInicio && $fechaFin) {
-                $bienesModel->where('fecha_adquisicion >=', $fechaInicio)
-                    ->where('fecha_adquisicion <=', $fechaFin);
-            }
-
-            // Paginación para limitar los resultados a 100 registros
-            $bienes = $bienesModel->paginate(100);  // Limita a 100 registros por página
-
-            if (empty($bienes)) {
-                throw new \Exception("No se encontraron bienes con los criterios seleccionados.");
-            }
-
-            // Generar la vista en HTML para el PDF
-            $data = ['bienes' => $bienes];
-            $html = view('reportes/reporte_bienes', $data);  // Vista que contendrá el PDF
-
-            // Cargar el HTML en DomPDF
-            $dompdf->loadHtml($html);
-
-            // Definir el tamaño y orientación del PDF
-            $dompdf->setPaper('A4', 'landscape');  // Horizontal
-
-            // Renderizar el PDF
-            $dompdf->render();
-
-            // Enviar el PDF al navegador para descarga
-            $dompdf->stream('reporte_bienes.pdf', ['Attachment' => false]);
-        } catch (\Exception $e) {
-            // En caso de error, mostrar un mensaje
-            return redirect()->back()->with('error', 'Error al generar el reporte: ' . $e->getMessage());
-        }
-    }
+    
     public function verificarCodigo()
     {
         $cod_patrimonial = $this->request->getPost('cod_patrimonial');
@@ -503,6 +448,16 @@ class Bienes extends BaseController
         $existe = $bienesModel->where('cod_patrimonial', $cod_patrimonial)->first();
 
         return $this->response->setJSON(['existe' => $existe ? true : false]);
+    }
+
+    public function getLocales()
+    {
+        $localesModel = new \App\Models\LocalesModel();
+        $locales = $localesModel
+            ->select('id,nombre')
+            ->orderBy('nombre', 'ASC')
+            ->findAll();
+        return $this->response->setJSON($locales);
     }
 
     public function getDepartamentos()
@@ -538,5 +493,27 @@ class Bienes extends BaseController
             ->findAll();
 
         return $this->response->setJSON($modelos);
+    }
+
+    public function buscarDescripcion()
+    {
+        $term = $this->request->getGet('term');//palabra buscada
+        $bienesModel = new \App\Models\BienesModel();
+
+        $resultados = [];
+
+        if ($term && strlen($term) >= 3) {
+            $data = $bienesModel
+                ->select('descripcion')
+                ->like('descripcion', $term, 'both')
+                ->distinct()
+                ->limit(10)
+                ->findAll();
+
+            foreach ($data as $row) {
+                $resultados[] = ['label' => $row['descripcion'], 'value' => $row['descripcion']];
+            }
+        }
+        return $this->response->setJSON($resultados);
     }
 }

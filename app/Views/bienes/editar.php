@@ -3,12 +3,16 @@
 
 <h3 class="my-3">Editar bien</h3>
 
+
+
 <?php if (session()->getFlashdata('error') !== null) { ?>
     <div class="alert alert-danger">
         <?= session()->getFlashdata('error'); ?>
     </div>
 
 <?php } ?>
+
+
 
 <form action="<?= base_url('bienes/' . $bien['id']); ?>" class="row g-3" method="post" autocomplete="off" onsubmit="return confirmarEnvio()">
     <input type="hidden" name="_method" value="PUT">

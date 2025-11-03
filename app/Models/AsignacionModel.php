@@ -6,10 +6,10 @@ use CodeIgniter\Model;
 
 class AsignacionModel extends Model
 {
-    protected $table            = 'movimientos';
-    protected $primaryKey       = 'id';
+    protected $table = 'movimientos';
+    protected $primaryKey = 'id';
     protected $useAutoIncrement = true;
-    protected $returnType       = 'array';
+    protected $returnType = 'array';
 
     protected $allowedFields = [
         'id_bienes',
@@ -20,12 +20,14 @@ class AsignacionModel extends Model
         'tipo_movimiento',
         'fecha_movimiento',
         'observaciones',
-        'lote'
+        'lote',
+        'anulado',
+        'motivo_anulacion'
     ];
 
     protected $useTimestamps = true;
-    protected $createdField  = 'created_at';
-    protected $updatedField  = 'updated_at';
+    protected $createdField = 'created_at';
+    protected $updatedField = 'updated_at';
 
     public function getMovimientosConDetalles()
     {
@@ -58,70 +60,71 @@ class AsignacionModel extends Model
             ->first();
     }
 
-   public function getResumenUsuarios()
-{
-    return $this->db->table('movimientos m')
-        ->select('m.lote, m.tipo_movimiento, m.fecha_movimiento, 
-                  m.id_personas, p.nombre, p.ape_paterno, p.ape_materno, 
+    public function getResumenUsuarios()
+    {
+        return $this->db->table('movimientos m')
+            ->select('m.id, m.lote, m.tipo_movimiento, m.fecha_movimiento, 
+                  m.id_personas, m.anulado, 
+                  p.nombre, p.ape_paterno, p.ape_materno, 
                   d.nombre as departamento, l.nombre as local')
-        ->join('personas p', 'p.id = m.id_personas', 'left')
-        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
-        ->join('locales l', 'l.id = m.id_locales', 'left')
-        ->orderBy('m.fecha_movimiento', 'DESC')
-        ->get()
-        ->getResultArray();
-}
+            ->join('personas p', 'p.id = m.id_personas', 'left')
+            ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+            ->join('locales l', 'l.id = m.id_locales', 'left')
+            ->orderBy('m.fecha_movimiento', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
 
 
 
 
-public function getBienesCambio($idPersona)
-{
-    // Bienes retirados
-    $retirados = $this->db->table('movimientos m')
-        ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
+    public function getBienesCambio($idPersona)
+    {
+        // Bienes retirados
+        $retirados = $this->db->table('movimientos m')
+            ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
                   d.nombre AS departamento, l.nombre AS local')
-        ->join('bienes b', 'b.id = m.id_bienes')
-        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
-        ->join('locales l', 'l.id = m.id_locales', 'left')
-        ->where('m.id_personas', $idPersona)
-        ->where('m.tipo_movimiento', 'retiro')
-        ->get()
-        ->getResultArray();
+            ->join('bienes b', 'b.id = m.id_bienes')
+            ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+            ->join('locales l', 'l.id = m.id_locales', 'left')
+            ->where('m.id_personas', $idPersona)
+            ->where('m.tipo_movimiento', 'retiro')
+            ->get()
+            ->getResultArray();
 
-    // Bienes asignados
-    $asignados = $this->db->table('movimientos m')
-        ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
+        // Bienes asignados
+        $asignados = $this->db->table('movimientos m')
+            ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
                   d.nombre AS departamento, l.nombre AS local')
-        ->join('bienes b', 'b.id = m.id_bienes')
-        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
-        ->join('locales l', 'l.id = m.id_locales', 'left')
-        ->where('m.id_personas', $idPersona)
-        ->where('m.tipo_movimiento', 'asignacion')
-        ->get()
-        ->getResultArray();
+            ->join('bienes b', 'b.id = m.id_bienes')
+            ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+            ->join('locales l', 'l.id = m.id_locales', 'left')
+            ->where('m.id_personas', $idPersona)
+            ->where('m.tipo_movimiento', 'asignacion')
+            ->get()
+            ->getResultArray();
 
-    return [
-        'retirados' => $retirados,
-        'asignados' => $asignados
-    ];
-}
+        return [
+            'retirados' => $retirados,
+            'asignados' => $asignados
+        ];
+    }
 
-public function getBienesPorLoteYTipo($idPersona, $tipo, $lote)
-{
-    return $this->db->table('movimientos m')
-        ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
+    public function getBienesPorLoteYTipo($idPersona, $tipo, $lote)
+    {
+        return $this->db->table('movimientos m')
+            ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie,
                   d.nombre AS departamento, l.nombre AS local')
-        ->join('bienes b', 'b.id = m.id_bienes')
-        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
-        ->join('locales l', 'l.id = m.id_locales', 'left')
-        ->where('m.id_personas', $idPersona)
-        ->where('m.tipo_movimiento', $tipo)
-        ->where('m.lote', $lote)
-        ->orderBy('m.fecha_movimiento', 'DESC')
-        ->get()
-        ->getResultArray();
-}
+            ->join('bienes b', 'b.id = m.id_bienes')
+            ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+            ->join('locales l', 'l.id = m.id_locales', 'left')
+            ->where('m.id_personas', $idPersona)
+            ->where('m.tipo_movimiento', $tipo)
+            ->where('m.lote', $lote)
+            ->orderBy('m.fecha_movimiento', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
 
 
 }

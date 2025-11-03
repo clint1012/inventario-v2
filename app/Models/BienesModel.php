@@ -65,18 +65,18 @@ class BienesModel extends Model
     }
 
 
-    // 🔹 Relación completa: persona + departamento + local 
+
     public function bienesConRelaciones()
     {
         return $this->select(
-            " bienes.*, personas.nombre_completo AS persona,
-             departamentos.nombre AS departamento, 
-             locales.nombre AS local "
+            "bienes.*, 
+         personas.nombre_completo AS nombre_persona,
+         departamentos.nombre AS nombre_departamento, 
+         locales.nombre AS nombre_local"
         )
             ->join('personas', 'bienes.id_personas = personas.id', 'left')
             ->join('departamentos', 'bienes.id_departamento = departamentos.id', 'left')
-            ->join('locales', 'bienes.id_locales = locales.id', 'left')
-            ->findAll();
+            ->join('locales', 'bienes.id_locales = locales.id', 'left');
     }
 
     public function buscarAsignacionPorCodigo(string $codigo)
@@ -88,10 +88,10 @@ class BienesModel extends Model
              departamentos.nombre AS nombre_departamento_actual '
         )
 
-            // 🚨 CORRECCIÓN: Usar bienes.id_personas en lugar de bienes.id_persona_asignada 
+            // Usar bienes.id_personas en lugar de bienes.id_persona_asignada 
             ->join('personas', 'personas.id = bienes.id_personas', 'left')
 
-            // 🚨 CORRECCIÓN: Usar bienes.id_departamento en lugar de bienes.id_departamento_asignado 
+            //Usar bienes.id_departamento en lugar de bienes.id_departamento_asignado 
             ->join('departamentos', 'departamentos.id = bienes.id_departamento', 'left')
             ->where('bienes.cod_patrimonial', $codigo)
             ->first();

@@ -181,6 +181,58 @@ class Asignacion extends BaseController
         return $this->response->setJSON(['results' => $results]);
     }
 
+    public function anular($id = null)
+    {
+        $movModel = new \App\Models\AsignacionModel();
+
+        if (!$id) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID de movimiento no válido']);
+        }
+
+        // Buscar el movimiento para obtener su lote
+        $movimiento = $movModel->find($id);
+        if (!$movimiento) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Movimiento no encontrado']);
+        }
+
+        // Obtener el lote del movimiento
+        $lote = $movimiento['lote'];
+
+        // Capturar motivo
+        $motivo = $this->request->getPost('motivo_anulacion') ?? 'Anulación manual';
+
+        // Verificar si ya está anulado ese lote
+        $yaAnulado = $movModel->where('lote', $lote)->where('anulado', 1)->first();
+        if ($yaAnulado) {
+            return $this->response->setJSON(['status' => 'info', 'message' => 'Este lote ya fue anulado anteriormente.']);
+        }
+
+        //  Anular todos los movimientos con el mismo lote
+        $movModel->where('lote', $lote)->set([
+            'anulado' => 1,
+            'motivo_anulacion' => $motivo
+        ])->update();
+
+        //  Liberar los bienes involucrados en ese lote
+        $bienesModel = new \App\Models\BienesModel();
+        $bienesIds = $movModel->select('id_bienes')->where('lote', $lote)->findAll();
+
+        foreach ($bienesIds as $b) {
+            $bienesModel->update($b['id_bienes'], [
+                'estado' => 'activo',
+                'id_personas' => 254,       // o null, según tu lógica
+                'id_departamentos' => 1,   // o null
+                'id_locales' => 5          // o null
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Todos los movimientos del lote fueron anulados correctamente.'
+        ]);
+    }
+
+
     // 📌 PDF individual
     public function descargarCargo($id)
     {
@@ -326,9 +378,5 @@ class Asignacion extends BaseController
 
         $dompdf->stream("Acta_{$persona['nombre']}.pdf", ["Attachment" => false]);
     }
-
-
-
-
 
 }

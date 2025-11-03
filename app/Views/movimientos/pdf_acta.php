@@ -70,7 +70,7 @@
 
     <p><strong>Departamento:</strong> <?= esc($departamento) ?></p>
     <p><strong>Local:</strong> <?= esc($local) ?></p>
-    <p><strong>Último responsable anterior:</strong> <?= esc($ultimo_responsable) ?></p>
+    <!-- <p><strong>Último responsable anterior:</strong> <?= esc($ultimo_responsable) ?></p> -->
  
     <br> <br>
     

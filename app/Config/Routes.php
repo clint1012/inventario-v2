@@ -24,6 +24,14 @@ $routes->resource('inventario2025', ['placeholder' => '(:num)', 'filter' => 'aut
 $routes->resource('baja', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('reportes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('ip', ['controller' => 'IpController', 'placeholder' => '(:num)', 'filter' => 'auth']);
+$routes->resource('proveedor', ['controller' => 'ProveedorController','placeholder' => '(:num)','filter' => 'auth']);
+
+
+// ======================================================
+//  Proveedor — REST principal
+// ======================================================
+$routes->get('proveedor/pdf/(:num)', 'ProveedorController::pdf/$1', ['filter' => 'auth']);
+
 
 // ======================================================
 //  Movimientos (Asignación) — REST principal
@@ -40,6 +48,8 @@ $routes->get('movimientos/descargarCargo/(:num)', 'Asignacion::descargarCargo/$1
 $routes->get('movimientos/descargarCargoLote/(:segment)', 'Asignacion::descargarCargoLote/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)', 'Asignacion::descargarActa/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)/(:segment)', 'Asignacion::descargarActa/$1/$2', ['filter' => 'auth']);
+$routes->post('movimientos/anular/(:num)', 'Asignacion::anular/$1', ['filter'=> 'auth']);
+
 
 // ======================================================
 // Bienes extras
@@ -49,9 +59,11 @@ $routes->get('bienes/reporte_bienes', 'Bienes::reporte_bienes', ['filter' => 'au
 $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 'auth']);
 $routes->post('bienes/desactivar', 'Bienes::desactivar', ['filter' => 'auth']);
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
+$routes->get('bienes/locales', 'Bienes::getLocales', ['filter' => 'auth']);
 $routes->get('bienes/departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);
 $routes->get('bienes/marcas', 'Bienes::getMarcas', ['filter'=>'auth'] );
 $routes->get('bienes/modelos', 'Bienes::getModelos', ['filter'=>'auth'] );
+$routes->get('bienes/buscarDescripcion', 'Bienes::buscarDescripcion', ['filter'=>'auth'] );
 
 
 // ======================================================
