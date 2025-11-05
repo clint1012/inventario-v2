@@ -29,7 +29,7 @@ class Asignacion extends BaseController
     // 📌 Listado de movimientos
     public function index()
     {
-        $data['usuarios'] = $this->asignacionModel->getResumenUsuarios();
+        $data['usuarios'] = $this->asignacionModel->getResumenUsuariosAgrupado();
         return view('movimientos/index', $data);
     }
 
@@ -63,7 +63,11 @@ class Asignacion extends BaseController
             $bienes = $this->request->getPost('bienes_asignar');
             $this->procesarAsignacion($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
 
-        } elseif ($tipo === 'retiro') {
+        }elseif ($tipo === 'prestamo') {
+            $bienes = $this->request->getPost('bienes_prestar');
+            $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
+
+        }elseif ($tipo === 'retiro') {
             $bienes = $this->request->getPost('bienes_retirar');
             $this->procesarRetiro($bienes, $fecha, $observaciones, $lote);
 
@@ -103,6 +107,38 @@ class Asignacion extends BaseController
 
             $this->bienesModel->update($idBien, [
                 'estado' => 'asignado',
+                'id_personas' => $idPersona,
+                'id_departamentos' => $idDepartamento,
+                'id_locales' => $idLocal,
+            ]);
+        }
+    }
+
+     // 📌 Procesar prestamos
+    private function procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote)
+    {
+        if (empty($bienes) || !is_array($bienes))
+            return;
+
+        foreach ($bienes as $idBien) {
+            // Guardar dueño anterior
+            $bien = $this->bienesModel->find($idBien);
+            $dueñoAnterior = $bien['id_personas'] ?? null;
+
+            $this->asignacionModel->insert([
+                'id_bienes' => $idBien,
+                'id_personas' => $idPersona,
+                'id_departamentos' => $idDepartamento,
+                'id_locales' => $idLocal,
+                'tipo_movimiento' => 'prestamo',
+                'fecha_movimiento' => $fecha,
+                'observaciones' => $observaciones,
+                'lote' => $lote,
+                'id_persona_anterior' => $dueñoAnterior // 📌 historial
+            ]);
+
+            $this->bienesModel->update($idBien, [
+                'estado' => 'prestamo',
                 'id_personas' => $idPersona,
                 'id_departamentos' => $idDepartamento,
                 'id_locales' => $idLocal,

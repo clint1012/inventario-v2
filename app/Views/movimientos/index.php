@@ -5,50 +5,33 @@
     <h2>📑 Actas de Instalación por Usuario</h2>
     <a href="<?= base_url('movimientos/new') ?>" class="btn btn-primary mb-3">+ Nuevo Movimiento</a>
 
-    <table id="tablaUsuarios" class="table table-bordered table-striped">
-        <thead class="thead-dark">
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
                 <th>Usuario</th>
+                <th>Fecha</th>
                 <th>Departamento</th>
                 <th>Local</th>
-                <th>Tipo de Movimiento</th>
-                <th>Fecha Movimiento</th>
-                <th>Acción</th>
+                <th>Tipo</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <?php if (!empty($usuarios)): ?>
-                <?php foreach ($usuarios as $u): ?>
-                    <tr data-lote="<?= $u['lote'] ?>">
-                        <td><?= $u['nombre'] . ' ' . $u['ape_paterno'] . ' ' . $u['ape_materno'] ?></td>
-                        <td><?= $u['departamento'] ?? '-' ?></td>
-                        <td><?= $u['local'] ?? '-' ?></td>
-                        <td><?= ucfirst($u['tipo_movimiento']) ?></td>
-                        <td><?= date('d/m/Y H:i:s', strtotime($u['fecha_movimiento'])) ?></td>
-                        <td>
-                            <a href="<?= base_url('movimientos/descargarActa/' . $u['id_personas'] . '/' . $u['lote']) ?>"
-                                target="_blank" class="btn btn-sm btn-outline-primary">
-                                📄 Descargar Acta
-                            </a>
-
-                            <?php if ($u['anulado'] == 0): ?>
-                                <button class="btn btn-danger btn-sm btnAnular" data-id="<?= $u['id'] ?>"
-                                    data-lote="<?= $u['lote'] ?>">
-                                    <i class="fas fa-ban"></i> Anular
-                                </button>
-                            <?php else: ?>
-                                <span class="badge badge-secondary">Anulado</span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
+            <?php foreach ($usuarios as $mov): ?>
                 <tr>
-                    <td colspan="6" class="text-center text-muted">
-                        ⚠ No hay movimientos registrados
+                    <td><?= $mov['nombre'] . ' ' . $mov['ape_paterno'] . ' ' . $mov['ape_materno'] ?></td>
+                    <td><?= date('d-m-Y H:i', strtotime($mov['fecha_movimiento'])) ?></td>
+                    <td><?= $mov['departamento'] ?></td>
+                    <td><?= $mov['local'] ?></td>
+                    <td><?= ucfirst($mov['tipo_movimiento']) ?></td>
+                    <td>
+                        <a href="<?= base_url('movimientos/descargarCargoLote/' . $mov['lote']) ?>"
+                            class="btn btn-sm btn-primary">PDF</a>
+                        <a href="<?= base_url('movimientos/anular/' . $mov['lote']) ?>"
+                            class="btn btn-sm btn-danger">Anular</a>
                     </td>
                 </tr>
-            <?php endif; ?>
+            <?php endforeach; ?>
         </tbody>
     </table>
 

@@ -76,11 +76,34 @@
                 </div>
             </li>
 
+            <!-- Nav Item - bienes -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url("index.php/bienes"); ?>">
+                    <i class="fas fa-desktop"></i>
+                    <span>Bienes</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Pages Collapse Menu -->
+            <li class="nav-item">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseThree"
+                    aria-expanded="true" aria-controls="collapseThree">
+                    <i class="fas fa-fw fa-wrench"></i>
+                    <span>Soporte Técnico</span>
+                </a>
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                         <a class="collapse-item" href="<?= base_url("index.php/mantenimiento") ?>">Mantenimiento</a>
+                         <a class="collapse-item" href="<?= base_url("index.php/#") ?>">Optimizacion</a>
+                    </div>
+                </div>
+            </li>
+
             <!-- Nav Item - Utilities Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
                     aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
+                    <i class="fas fa-fw fa-book"></i>
                     <span>Inventario</span>
                 </a>
                 <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
@@ -90,8 +113,7 @@
                         <a class="collapse-item" href="<?= base_url("index.php/bienes") ?>">Inventario</a>
                         <a class="collapse-item" href="<?= base_url('movimientos') ?>">Movimientos</a>
                         <a class="collapse-item" href="<?= base_url("index.php/baja") ?>">Baja</a>
-                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i
-                                class="fas fa-network-wired mr-1"></i> IPs</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i class="fas fa-network-wired mr-1"></i> IPs</a>
 
                     </div>
                 </div>
@@ -702,6 +724,9 @@
         });
     </script>
 
+
+
+
     <!-- ============================== -->
     <!--  Script de asignación / retiro (Select2) -->
     <!-- ============================== -->
@@ -803,6 +828,7 @@
             }
 
             initSelect2('#buscador_asignar', 'asignacion', 'lista_asignar', 'bienes_asignar');
+            initSelect2('#buscador_prestar', 'prestamo', 'lista_prestar', 'bienes_prestar');
             initSelect2('#buscador_retirar', 'retiro', 'lista_retirar', 'bienes_retirar');
 
             $(document).on('click', '.remove-bien', function () {
@@ -814,6 +840,7 @@
             $('#tipo_movimiento').change(function () {
                 let tipo = $(this).val();
                 $('#contenedor_asignar').toggle(tipo === 'asignacion' || tipo === 'cambio');
+                $('#contenedor_prestar').toggle(tipo === 'prestamo' || tipo === 'cambio');
                 $('#contenedor_retirar').toggle(tipo === 'retiro' || tipo === 'cambio');
             }).trigger('change');
         });

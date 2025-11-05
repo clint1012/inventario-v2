@@ -35,6 +35,9 @@ class BienesModel extends Model
         'proveedor',
         'id_locales',
         'motivo_baja',
+        'motivo_mantenimiento',
+        'usuario_mantenimiento',
+        'tipo_mantenimiento',
         'usuario_baja',
         'foto_frente',
         'foto_lateral'

@@ -126,5 +126,32 @@ class AsignacionModel extends Model
             ->getResultArray();
     }
 
+    public function getResumenUsuariosAgrupado()
+{
+    $movimientos = $this->db->table('movimientos m')
+        ->select('m.lote, m.tipo_movimiento, m.fecha_movimiento, m.id_personas, m.anulado, 
+                 p.nombre, p.ape_paterno, p.ape_materno,
+                 d.nombre as departamento, l.nombre as local')
+        ->join('personas p', 'p.id = m.id_personas', 'left')
+        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+        ->join('locales l', 'l.id = m.id_locales', 'left')
+        ->groupBy('m.lote') // ✅ agrupamos por lote
+        ->orderBy('m.fecha_movimiento', 'DESC')
+        ->get()
+        ->getResultArray();
+
+    // Obtener los bienes de cada lote
+    foreach ($movimientos as &$mov) {
+        $mov['bienes'] = $this->db->table('movimientos m')
+            ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie')
+            ->join('bienes b', 'b.id = m.id_bienes')
+            ->where('m.lote', $mov['lote'])
+            ->get()
+            ->getResultArray();
+    }
+
+    return $movimientos;
+}
+
 
 }

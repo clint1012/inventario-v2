@@ -109,7 +109,6 @@ class Bienes extends BaseController
         return view('bienes/ver', $data);
     }
 
-
     /**
      * Return a new resource object, with default properties.
      *
@@ -439,7 +438,7 @@ class Bienes extends BaseController
         return $this->response->setJSON($personas);
     }
 
-    
+
     public function verificarCodigo()
     {
         $cod_patrimonial = $this->request->getPost('cod_patrimonial');
@@ -515,5 +514,30 @@ class Bienes extends BaseController
             }
         }
         return $this->response->setJSON($resultados);
+    }
+
+    public function getMantenimiento()
+    {
+
+        $bien_id = $this->request->getPost('bien_id');
+        $motivo_mantenimiento = $this->request->getPost('motivo_mantenimiento');
+        $usuario_mantenimiento = $this->request->getPost('usuario_mantenimiento');
+        $tipo_mantenimiento = $this->request->getPost('tipo_mantenimiento');
+
+        // Validar que los datos sean correctos
+        if (!$bien_id || !$motivo_mantenimiento || !$usuario_mantenimiento || !$tipo_mantenimiento) {
+            return redirect()->to('bienes')->with('error', 'Todos los campos son obligatorios.');
+        }
+
+        $data = [
+            'estado' => 'mantenimiento',
+            'motivo_mantenimiento' => $motivo_mantenimiento,
+            'usuario_mantenimiento' => $usuario_mantenimiento,
+            'tipo_mantenimiento' => $tipo_mantenimiento,
+        ];
+
+        $this->bienesModel->update($bien_id, $data);
+
+        return redirect()->to('bienes')->with('success', 'El bien ha sido enviado a mantenimiento exitosamente.');
     }
 }

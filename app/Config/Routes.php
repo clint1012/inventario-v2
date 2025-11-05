@@ -22,6 +22,7 @@ $routes->resource('bienes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('personas', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('inventario2025', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('baja', ['placeholder' => '(:num)', 'filter' => 'auth']);
+$routes->resource('mantenimiento', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('reportes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('ip', ['controller' => 'IpController', 'placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('proveedor', ['controller' => 'ProveedorController','placeholder' => '(:num)','filter' => 'auth']);
@@ -31,6 +32,13 @@ $routes->resource('proveedor', ['controller' => 'ProveedorController','placehold
 //  Proveedor — REST principal
 // ======================================================
 $routes->get('proveedor/pdf/(:num)', 'ProveedorController::pdf/$1', ['filter' => 'auth']);
+
+
+// ======================================================
+//  Mantenimiento — REST principal
+// ======================================================
+$routes->post('mantenimiento/recuperar/(:num)', 'Mantenimiento::recuperar/$1', ['filter' => 'auth']);
+
 
 
 // ======================================================
@@ -58,6 +66,7 @@ $routes->post('bienes/subida_masiva', 'Bienes::subida_masiva', ['filter' => 'aut
 $routes->get('bienes/reporte_bienes', 'Bienes::reporte_bienes', ['filter' => 'auth']);
 $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 'auth']);
 $routes->post('bienes/desactivar', 'Bienes::desactivar', ['filter' => 'auth']);
+$routes->post('bienes/getMantenimiento', 'Bienes::getMantenimiento', ['filter' => 'auth']);
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
 $routes->get('bienes/locales', 'Bienes::getLocales', ['filter' => 'auth']);
 $routes->get('bienes/departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);

@@ -19,6 +19,7 @@
             <label for="tipo_movimiento">Tipo de movimiento</label>
             <select name="tipo_movimiento" id="tipo_movimiento" class="form-control" required>
                 <option value="asignacion">Asignación</option>
+                <option value="prestamo">Prestamo</option>
                 <option value="retiro">Retiro</option>
                 <option value="cambio">Cambio</option>
             </select>
@@ -27,12 +28,8 @@
         <!-- Fecha -->
         <div class="form-group">
             <label for="fecha_movimiento">Fecha</label>
-            <input type="datetime-local" 
-                   name="fecha_movimiento" 
-                   id="fecha_movimiento" 
-                   class="form-control"
-                   value="<?= date('Y-m-d\TH:i') ?>" 
-                   required>
+            <input type="datetime-local" name="fecha_movimiento" id="fecha_movimiento" class="form-control"
+                value="<?= date('Y-m-d\TH:i') ?>" required>
         </div>
 
         <!-- Persona -->
@@ -42,7 +39,7 @@
                 <option value="">-- Seleccione --</option>
                 <?php foreach ($personas as $p): ?>
                     <option value="<?= $p['id'] ?>">
-                        <?= $p['nombre'] ?> <?= $p['ape_paterno'] ?> <?= $p['ape_materno'] ?>
+                        <?= $p['nombre'] ?>     <?= $p['ape_paterno'] ?>     <?= $p['ape_materno'] ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -75,6 +72,13 @@
             <label for="buscador_asignar">Buscar bienes para asignar</label>
             <select id="buscador_asignar" class="form-control"></select>
             <ul id="lista_asignar" class="list-group mt-2"></ul>
+        </div>
+
+        <!-- 📌 Contenedor para prestamo -->
+        <div id="contenedor_prestar" class="form-group">
+            <label for="buscador_prestar">Buscar bienes para prestar</label>
+            <select id="buscador_prestar" class="form-control"></select>
+            <ul id="lista_prestar" class="list-group mt-2"></ul>
         </div>
 
         <!-- 📌 Contenedor para Retiro -->

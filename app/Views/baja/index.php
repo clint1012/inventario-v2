@@ -1,7 +1,7 @@
 <?php echo $this->extend('plantilla'); ?>
 <?= $this->section('contenido'); ?>
 
-<h3 class="my-3" id="titulo">Bienes retirados</h3>
+<h3 class="my-3" id="titulo">Solicitud de baja de bienes</h3>
 
 <!-- Mensajes Flash -->
 <?php if (session()->has('error')) : ?>

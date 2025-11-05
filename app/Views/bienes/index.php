@@ -14,7 +14,7 @@
 
 
 <div class="d-flex justify-content-between mb-4">
-    <a href="<?= base_url('bienes/new') ?>" class="btn btn-success">
+    <a href="<?= base_url('bienes/new') ?>" class="btn btn-info">
         Agregar
     </a>
 
@@ -110,9 +110,8 @@
                 <td>
                     <a href="<?= base_url('bienes/' . $b['id'] . '/edit') ?>"
                         class="btn btn-warning btn-sm me-2 mb-1">Editar</a>
-                    <a href="<?= base_url('bienes/' . $b['id']) ?>" class="btn btn-warning btn-sm me-2">Ver</a>
-                    <a href="#" onclick="abrirModalBaja(<?= $b['id'] ?>)" class="btn btn-danger btn-sm me-2"> Dar de
-                        baja</a>
+                    <a href="<?= base_url('bienes/' . $b['id']) ?>" class="btn btn-success btn-sm me-2">Ver</a>
+                    <a href="#" onclick="abrirModalBaja(<?= $b['id'] ?>)" class="btn btn-danger btn-sm me-2"> Solicitar baja</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -171,7 +170,9 @@
             window.location.href = "<?= base_url('bienes/desactivar/') ?>" + id;
 
         }
-    } function abrirModalBaja(id) {
+    } 
+    
+    function abrirModalBaja(id) {
         document.getElementById('bien_id').value = id; // Pasar el ID al modal 
         $('#modalBaja').modal('show'); // Mostrar el modal 
     } 
