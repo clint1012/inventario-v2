@@ -26,6 +26,13 @@ $routes->resource('mantenimiento', ['placeholder' => '(:num)', 'filter' => 'auth
 $routes->resource('reportes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('ip', ['controller' => 'IpController', 'placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('proveedor', ['controller' => 'ProveedorController','placeholder' => '(:num)','filter' => 'auth']);
+$routes->resource('optimizacion', ['controller' => 'Optimizacion','placeholder' => '(:num)','filter' => 'auth']);
+
+
+// Rutas adicionales optimizacion
+$routes->get('optimizacion/buscarBien/(:segment)', 'Optimizacion::buscarBien/$1', ['filter' => 'auth']);
+$routes->get('bienes/getPorCodigo/(:any)', 'Bienes::getPorCodigo/$1', ['filter' => 'auth']);
+
 
 
 // ======================================================

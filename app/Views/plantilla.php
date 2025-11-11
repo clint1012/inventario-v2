@@ -94,7 +94,7 @@
                 <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                          <a class="collapse-item" href="<?= base_url("index.php/mantenimiento") ?>">Mantenimiento</a>
-                         <a class="collapse-item" href="<?= base_url("index.php/#") ?>">Optimizacion</a>
+                         <a class="collapse-item" href="<?= base_url("index.php/optimizacion") ?>">Optimizacion</a>
                     </div>
                 </div>
             </li>
