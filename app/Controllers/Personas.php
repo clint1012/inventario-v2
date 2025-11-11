@@ -5,93 +5,100 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\PersonasModel;
 use App\Models\RegimenLaboralModel;
+use App\Models\LocalesModel;
 
 class Personas extends BaseController
 {
     protected $helpers = ['form'];
-    /**
-     * Return an array of resource objects, themselves in array format.
-     *
-     * @return ResponseInterface
-     */
+
     public function index()
     {
-        //
         $personasModel = new PersonasModel();
-        $data['personas'] = $personasModel->findAll();
-        return view('personas/index',$data);
+
+        // JOIN con locales y regimen_laboral
+        $data['personas'] = $personasModel
+            ->select('personas.*, locales.nombre AS nombre_local, regimen_laboral.regimen_laboral AS nombre_regimen')
+            ->join('locales', 'locales.id = personas.id_locales', 'left')
+            ->join('regimen_laboral', 'regimen_laboral.id = personas.id_regimen_laboral', 'left')
+            ->findAll();
+
+        return view('personas/index', $data);
     }
 
-    /**
-     * Return the properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
-    public function show($id = null)
+
+    public function show($id)
     {
-        //
-        if ($id === null) {
-            return redirect()->route('personas');
-        }
         $personasModel = new PersonasModel();
-        $regimenLaboralModel = new RegimenLaboralModel();
+        $regimenModel = new RegimenLaboralModel();
+        $localesModel = new LocalesModel();
 
-        $data ['persona'] = $personasModel->find($id);
-        $data ['regimen_laboral'] = $regimenLaboralModel->findAll();
+        $persona = $personasModel
+            ->select('personas.*, regimen_laboral.regimen_laboral, locales.nombre as nombre_local')
+            ->join('regimen_laboral', 'personas.id_regimen_laboral = regimen_laboral.id', 'left')
+            ->join('locales', 'personas.id_locales = locales.id', 'left')
+            ->find($id);
 
-        if(!$data['persona']) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException("persona no encontrada");
+        if (!$persona) {
+            return redirect()->to('personas')->with('error', 'Persona no encontrada');
         }
 
-        return view('personas/ver',$data);
-        }
+        $data = [
+            'titulo' => 'Detalles de la Persona',
+            'persona' => $persona,
+        ];
 
-    /**
-     * Return a new resource object, with default properties.
-     *
-     * @return ResponseInterface
-     */
+        return view('personas/ver', $data);
+    }
+
+
     public function new()
     {
         // Crear instancias de los modelos
-        
-        $regimenLaboralModel = new RegimenLaboralModel();
+
+        $localesModel = new LocalesModel();
+        $regimenModel = new RegimenLaboralModel();
 
         // Obtener los datos de departamentos y personas
-        
-        $data['regimen_laboral'] = $regimenLaboralModel->findAll();
-       
+
+        $data = [
+            'locales' => $localesModel->findAll(),
+            'regimenes' => $regimenModel->findAll(),
+        ];
+
         // Pasar los datos a la vista
         return view('personas/nuevo', $data);
     }
 
-    /**
-     * Create a new resource object, from "posted" parameters.
-     *
-     * @return ResponseInterface
-     */
+
     public function create()
     {
         //
         $reglas = [
-            'dni' => 'required|min_length[8]|max_length[8]|is_unique[bienes.cod_patrimonial]',
+            'dni' => 'required|min_length[8]|max_length[8]|is_unique[personas.dni]',
             'nombre' => 'required',
             'ape_paterno' => 'required',
             'ape_materno' => 'required',
-            'id_regimen_laboral' => 'required',
+            'id_regimen_laboral' => 'required|integer',
+            'id_locales' => 'required|integer',
         ];
         if (!$this->validate($reglas)) {
             return redirect()->back()->withInput()->with('error', $this->validator->listErrors());
-        };
+        }
+        ;
 
         $post = $this->request->getPost([
+            'dni',
             'nombre',
             'ape_paterno',
             'ape_materno',
             'id_regimen_laboral',
-            'dni'
+            'fecha_inicio',
+            'fecha_fin',
+            'correo',
+            'telefono',
+            'direccion_domiciliaria',
+            'modalidad',
+            'id_locales'
         ]);
 
         $personasModel = new PersonasModel();
@@ -100,95 +107,86 @@ class Personas extends BaseController
             'nombre' => trim($post['nombre']),
             'ape_paterno' => trim($post['ape_paterno']),
             'ape_materno' => trim($post['ape_materno']),
-            'id_regimen_laboral' => trim($post['estado']),
+            'id_regimen' => $post['id_regimen_laboral'],
+            'fecha_inicio' => $post['fecha_inicio'],
+            'fecha_fin' => $post['fecha_fin'],
+            'correo' => $post['correo'],
+            'telefono' => $post['telefono'],
+            'direccion_domiciliaria' => $post['direccion domiciliaria'],
+            'modalidad' => $post['modalidad'],
+            'id_locales' => $post['id_locales']
 
         ]);
-        return redirect()->to('personas');
+        return redirect()->to(base_url('personas'))->with('success', 'Persona creada correctamente');
 
     }
 
-    /**
-     * Return the editable properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
-    public function edit($id = null)
+
+    public function edit($id)
     {
-        if ($id == null) {
-            return redirect()->route('personas');
-        }
-        //
+        $personasModel = new PersonasModel();
+        $regimenModel = new RegimenLaboralModel();
+        $localesModel = new LocalesModel();
 
-        $personasModel = new PersonasModel(); // Instancia del modelo Personas
-        $regimenLaboralModel = new RegimenLaboralModel();
-        
-        // Obtener datos necesarios para la vista
-       
-        $data['persona'] = $personasModel->find($id); // Obtener todas las personas
-        $data['regimen_laboral'] = $regimenLaboralModel->findAll();
+        $persona = $personasModel->find($id);
 
-        if (!$data['persona']) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException("persona no encontrado.");
+        if (!$persona) {
+            return redirect()->to('personas')->with('error', 'Persona no encontrada');
         }
+
+        $data = [
+            'persona' => $persona,
+            'regimenes' => $regimenModel->findAll(),
+            'locales' => $localesModel->findAll(),
+        ];
 
         return view('personas/editar', $data);
     }
 
-    /**
-     * Add or update a model resource, from "posted" properties.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
-    public function update($id = null)
+
+    public function update($id)
     {
-        //
-        if (!$this->request->is('put') || $id == null) {
-            return redirect()->route('personas');
-        }
+        $personasModel = new PersonasModel();
 
         $reglas = [
-            'dni' => 'required|min_length[8]|max_length[8]|is_unique[bienes.cod_patrimonial]',
+            'dni' => "required|min_length[8]|max_length[8]",
             'nombre' => 'required',
             'ape_paterno' => 'required',
             'ape_materno' => 'required',
             'id_regimen_laboral' => 'required',
+            'id_locales' => 'required',
+            'correo' => 'required|valid_email',
+            'telefono' => 'required',
+            'direccion_domiciliaria' => 'required',
+            'fecha_inicio' => 'required|valid_date',
+            'fecha_fin' => 'required|valid_date'
         ];
 
         if (!$this->validate($reglas)) {
             return redirect()->back()->withInput()->with('error', $this->validator->listErrors());
-        };
+        }
 
         $post = $this->request->getPost([
+            'dni',
             'nombre',
             'ape_paterno',
             'ape_materno',
             'id_regimen_laboral',
-            'dni'
+            'id_locales',
+            'correo',
+            'telefono',
+            'direccion_domiciliaria',
+            'modalidad',
+            'fecha_inicio',
+            'fecha_fin'
         ]);
 
-        $personasModel = new PersonasModel();
-        $personasModel->update($id,[
-            'dni' => trim($post['dni']),
-            'nombre' => trim($post['nombre']),
-            'ape_paterno' => trim($post['ape_paterno']),
-            'ape_materno' => trim($post['ape_materno']),
-            'id_regimen_laboral' => trim($post['estado']),
-        ]);
+        $personasModel->update($id, $post);
 
-        return redirect()->to('personas');
+        return redirect()->to('personas')->with('success', 'Datos actualizados correctamente');
     }
 
-    /**
-     * Delete the designated resource object from the model.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
+
     public function delete($id = null)
     {
         //

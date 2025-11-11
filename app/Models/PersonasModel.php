@@ -12,7 +12,8 @@ class PersonasModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nombre','ape_paterno','ape_materno','id_regimen_laboral','dni'];
+    protected $allowedFields    = ['nombre_completo','nombre','ape_paterno','ape_materno','id_regimen_laboral','fecha_inicio',
+    'fecha_fin','dni','correo','telefono','direccion_domiciliaria','modalidad','id_locales',];
 
 
     // Dates

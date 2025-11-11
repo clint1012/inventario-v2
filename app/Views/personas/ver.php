@@ -1,55 +1,69 @@
-<?php echo $this->extend('plantilla'); ?>
+<?= $this->extend('plantilla'); ?>
 <?= $this->section('contenido'); ?>
 
-<h3 class="my-3">Ver Personas</h3>
+<div class="container-fluid mt-4">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">👤 Detalles de la Persona</h4>
+            <a href="<?= base_url('personas') ?>" class="btn btn-light btn-sm">← Volver</a>
+        </div>
 
-<?php if (session()->getFlashdata('error') !== null) { ?>
-    <div class="alert alert-danger">
-        <?= session()->getFlashdata('error'); ?>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">DNI:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['dni']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Nombre Completo:</h6>
+                    <p class="font-weight-bold">
+                        <?= esc($persona['nombre']) . ' ' . esc($persona['ape_paterno']) . ' ' . esc($persona['ape_materno']) ?>
+                    </p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Régimen Laboral:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['regimen_laboral']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Fecha Inicio Contrato:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['fecha_inicio']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Fecha Fin Contrato:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['fecha_fin']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Correo:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['correo']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Teléfono:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['telefono']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Dirección Domiciliaria:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['direccion_domiciliaria']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Modalidad:</h6>
+                    <p class="font-weight-bold text-capitalize"><?= esc($persona['modalidad']) ?></p>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <h6 class="text-muted">Local:</h6>
+                    <p class="font-weight-bold"><?= esc($persona['nombre_local']) ?></p>
+                </div>
+            </div>
+        </div>
     </div>
-
-<?php } ?>
-
-<form action="<?= base_url('personas/' . $persona['id']); ?>" class="row g-3" method="post" autocomplete="off">
-    <input type="hidden" name="_method" value="get">
-    <input type="hidden" name="persona_id" value="<?= $persona['id'] ?>">
-
-    <div class="col-md-4">
-        <label for="dni" class="form-label">DNI</label>
-        <input type="text" class="form-control" id="dni" name="dni" value="<?= $persona['dni'] ?>" readonly>
-    </div>
-
-    <div class="col-md-8">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="nombre" name="nombre" value="<?= $persona['nombre'] ?>"  readonly>
-    </div>
-
-    <div class="col-md-6">
-        <label for="ape_paterno" class="form-label">Apellido Paterno</label>
-        <input type="text" class="form-control" id="ape_paterno" name="ape_paterno" value="<?= $persona['ape_paterno'] ?>"  readonly>
-    </div>
-
-    <div class="col-md-6">
-        <label for="ape_materno" class="form-label">Apellido Materno</label>
-        <input type="text" class="form-control" id="ape_materno" name="ape_materno" value="<?= $persona['ape_materno'] ?>" readonly>
-    </div>
-
-    <div class="col-md-6">
-        <label for="regimen_laboral" class="form-label">Asignar regimen laboral</label>
-        <select class="form-select form-control" id="regimen_laboral" name="regimen_laboral" disabled>
-            <option value="">Seleccionar</option>
-            <?php foreach ($regimen_laboral as $regimen) : ?>
-                <option value="<?= $regimen['id']; ?>" <?php echo ($regimen['id'] == $persona['id_regimen_laboral']) ? 'selected' : ''; ?>> <?= $regimen['regimen_laboral'] ?></option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-
-    <div class="col-12">
-        <a href="<?= base_url('personas') ?>" class="btn btn-secondary">Regresar</a>
-
-    </div>
-
-</form>
+</div>
 
 <?= $this->endSection(); ?>
