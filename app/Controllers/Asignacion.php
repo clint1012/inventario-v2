@@ -63,11 +63,11 @@ class Asignacion extends BaseController
             $bienes = $this->request->getPost('bienes_asignar');
             $this->procesarAsignacion($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
 
-        }elseif ($tipo === 'prestamo') {
+        } elseif ($tipo === 'prestamo') {
             $bienes = $this->request->getPost('bienes_prestar');
             $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
 
-        }elseif ($tipo === 'retiro') {
+        } elseif ($tipo === 'retiro') {
             $bienes = $this->request->getPost('bienes_retirar');
             $this->procesarRetiro($bienes, $fecha, $observaciones, $lote);
 
@@ -114,7 +114,7 @@ class Asignacion extends BaseController
         }
     }
 
-     // 📌 Procesar prestamos
+    // 📌 Procesar prestamos
     private function procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote)
     {
         if (empty($bienes) || !is_array($bienes))
@@ -217,56 +217,71 @@ class Asignacion extends BaseController
         return $this->response->setJSON(['results' => $results]);
     }
 
-    public function anular($id = null)
+
+    public function anular($lote = null)
     {
         $movModel = new \App\Models\AsignacionModel();
+        $bienesModel = new \App\Models\BienesModel();
 
-        if (!$id) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'ID de movimiento no válido']);
+        if (!$lote) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no válido.']);
+            }
+            return redirect()->to('movimientos')->with('error', 'Lote no válido.');
         }
 
-        // Buscar el movimiento para obtener su lote
-        $movimiento = $movModel->find($id);
+        // Verificar si existe el lote
+        $movimiento = $movModel->where('lote', $lote)->first();
         if (!$movimiento) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Movimiento no encontrado']);
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'No se encontró ningún movimiento con ese lote.']);
+            }
+            return redirect()->to('movimientos')->with('error', 'No se encontró ningún movimiento con ese lote.');
         }
 
-        // Obtener el lote del movimiento
-        $lote = $movimiento['lote'];
+        // Verificar si ya fue anulado
+        if ($movimiento['anulado'] == 1) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'info', 'message' => 'Este lote ya fue anulado anteriormente.']);
+            }
+            return redirect()->to('movimientos')->with('info', 'Este lote ya fue anulado anteriormente.');
+        }
 
-        // Capturar motivo
+        // Capturar motivo desde POST (si se usa formulario)
         $motivo = $this->request->getPost('motivo_anulacion') ?? 'Anulación manual';
 
-        // Verificar si ya está anulado ese lote
-        $yaAnulado = $movModel->where('lote', $lote)->where('anulado', 1)->first();
-        if ($yaAnulado) {
-            return $this->response->setJSON(['status' => 'info', 'message' => 'Este lote ya fue anulado anteriormente.']);
-        }
-
-        //  Anular todos los movimientos con el mismo lote
+        // Anular todos los movimientos del mismo lote
         $movModel->where('lote', $lote)->set([
             'anulado' => 1,
             'motivo_anulacion' => $motivo
         ])->update();
 
-        //  Liberar los bienes involucrados en ese lote
-        $bienesModel = new \App\Models\BienesModel();
+        // Liberar los bienes involucrados
         $bienesIds = $movModel->select('id_bienes')->where('lote', $lote)->findAll();
 
         foreach ($bienesIds as $b) {
             $bienesModel->update($b['id_bienes'], [
                 'estado' => 'activo',
-                'id_personas' => 254,       // o null, según tu lógica
-                'id_departamentos' => 1,   // o null
-                'id_locales' => 5          // o null
+                'id_personas' => 254,
+                'id_departamentos' => 1,
+                'id_locales' => 5
             ]);
         }
 
-        return $this->response->setJSON([
-            'status' => 'success',
-            'message' => 'Todos los movimientos del lote fueron anulados correctamente.'
-        ]);
+        // Si es AJAX → devolver JSON
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'status' => 'ok',
+                'message' => 'El lote fue anulado correctamente.'
+            ]);
+        }
+
+        // Si NO es AJAX → redirigir normalmente
+        return redirect()->to('movimientos')->with('success', 'El lote fue anulado correctamente.');
     }
+
+
+
 
 
     // 📌 PDF individual

@@ -10,8 +10,10 @@ class ProveedorModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = [
         'nombre',
+        'rep_legal',
         'ruc',
         'telefono',
+        'tel_fijo',
         'correo',
         'direccion',
         'estado',

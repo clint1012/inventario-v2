@@ -75,12 +75,20 @@
             <td><?= esc($proveedor['nombre']) ?></td>
         </tr>
         <tr>
+            <th>Nombre Representante</th>
+            <td><?= esc($proveedor['rep_legal']) ?></td>
+        </tr>
+        <tr>
             <th>RUC</th>
             <td><?= esc($proveedor['ruc']) ?></td>
         </tr>
         <tr>
-            <th>Teléfono</th>
+            <th>Teléfono Movil</th>
             <td><?= esc($proveedor['telefono']) ?></td>
+        </tr>
+        <tr>
+            <th>Teléfono Fijo</th>
+            <td><?= esc($proveedor['tel_fijo']) ?></td>
         </tr>
         <tr>
             <th>Correo</th>

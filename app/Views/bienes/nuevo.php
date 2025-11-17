@@ -42,6 +42,7 @@
             <option value="toshiba" <?= set_value('marca') === 'toshiba' ? 'selected' : '' ?>>Toshiba</option>
             <option value="epson" <?= set_value('marca') === 'epson' ? 'selected' : '' ?>>Epson</option>
             <option value="xerox" <?= set_value('marca') === 'xerox' ? 'selected' : '' ?>>Xerox</option>
+            <option value="LG" <?= set_value('marca') === 'LG' ? 'selected' : '' ?>>LG</option>
             <option value="otro" <?= set_value('marca') === 'otro' ? 'selected' : '' ?>>Otro</option>
         </select>
     </div>
@@ -72,6 +73,7 @@
             <option value="core i7-9na" <?= set_value('procesador') === 'core i7-9na' ? 'selected' : '' ?>>Core i7-9na Gen</option>
             <option value="core i7-10ma" <?= set_value('procesador') === 'core i7-10ma' ? 'selected' : '' ?>>Core i7-10ma Gen</option>
             <option value="core i7-11va" <?= set_value('procesador') === 'core i7-11va' ? 'selected' : '' ?>>Core i7-11va Gen</option>
+            <option value="core i7-14va" <?= set_value('procesador') === 'core i7-14va' ? 'selected' : '' ?>>Core i7-14va Gen</option>
             <option value="core i7-ultra" <?= set_value('procesador') === 'core i7-utra' ? 'selected' : '' ?>>Core i7-Ultra</option>
             <option value="NO APLICA" <?= set_value('procesador') === 'NO APLICA' ? 'selected' : '' ?>>No Aplica</option>
             <option value="otro" <?= set_value('procesador') === 'otro' ? 'selected' : '' ?>>Otro</option>
@@ -116,7 +118,7 @@
 
     <div class="col-md-6">
         <label for="espacio_disco" class="form-label">Espacio de disco</label>
-        <input type="text" class="form-control" id="espacio_disco" name="espacio_disco" value="<?= set_value('espacio_disco') ?>" required>
+        <input type="text" class="form-control" id="espacio_disco" name="espacio_disco" value="<?= set_value('espacio_disco') ?>" >
     </div>
 
     <div class="col-md-6">
@@ -153,7 +155,7 @@
 
     <div class="col-md-6">
         <label for="Ip" class="form-label">IP Address</label>
-        <input type="text" class="form-control" id="Ip" name="Ip" value="<?= set_value('Ip') ?>" required>
+        <input type="text" class="form-control" id="Ip" name="Ip" value="<?= set_value('Ip') ?>" >
     </div>
 
     <div class="col-md-6">

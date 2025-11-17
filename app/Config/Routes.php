@@ -25,15 +25,16 @@ $routes->resource('baja', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('mantenimiento', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('reportes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('ip', ['controller' => 'IpController', 'placeholder' => '(:num)', 'filter' => 'auth']);
-$routes->resource('proveedor', ['controller' => 'ProveedorController','placeholder' => '(:num)','filter' => 'auth']);
-$routes->resource('optimizacion', ['controller' => 'Optimizacion','placeholder' => '(:num)','filter' => 'auth']);
+$routes->resource('proveedor', ['controller' => 'ProveedorController', 'placeholder' => '(:num)', 'filter' => 'auth']);
+$routes->resource('optimizacion', ['controller' => 'Optimizacion', 'placeholder' => '(:num)', 'filter' => 'auth']);
+$routes->resource('licencias', ['controller' => 'Licencias', 'placeholder' => '(:num)', 'filter' => 'auth']);
 
 
 // Rutas adicionales optimizacion
 $routes->get('optimizacion/buscarBien/(:segment)', 'Optimizacion::buscarBien/$1', ['filter' => 'auth']);
 $routes->get('bienes/getPorCodigo/(:any)', 'Bienes::getPorCodigo/$1', ['filter' => 'auth']);
 
-
+// Rutas adicionales licencias
 
 // ======================================================
 //  Proveedor — REST principal
@@ -63,7 +64,8 @@ $routes->get('movimientos/descargarCargo/(:num)', 'Asignacion::descargarCargo/$1
 $routes->get('movimientos/descargarCargoLote/(:segment)', 'Asignacion::descargarCargoLote/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)', 'Asignacion::descargarActa/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)/(:segment)', 'Asignacion::descargarActa/$1/$2', ['filter' => 'auth']);
-$routes->post('movimientos/anular/(:num)', 'Asignacion::anular/$1', ['filter'=> 'auth']);
+$routes->post('movimientos/anular/(:segment)', 'Asignacion::anular/$1', ['filter' => 'auth']);
+
 
 
 // ======================================================
@@ -77,9 +79,10 @@ $routes->post('bienes/getMantenimiento', 'Bienes::getMantenimiento', ['filter' =
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
 $routes->get('bienes/locales', 'Bienes::getLocales', ['filter' => 'auth']);
 $routes->get('bienes/departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);
-$routes->get('bienes/marcas', 'Bienes::getMarcas', ['filter'=>'auth'] );
-$routes->get('bienes/modelos', 'Bienes::getModelos', ['filter'=>'auth'] );
-$routes->get('bienes/buscarDescripcion', 'Bienes::buscarDescripcion', ['filter'=>'auth'] );
+$routes->get('bienes/marcas', 'Bienes::getMarcas', ['filter' => 'auth']);
+$routes->get('bienes/modelos', 'Bienes::getModelos', ['filter' => 'auth']);
+$routes->get('bienes/buscarDescripcion', 'Bienes::buscarDescripcion', ['filter' => 'auth']);
+$routes->post('bienes/filtrar', 'Bienes::filtrar',['filter' => 'auth']);
 
 
 // ======================================================

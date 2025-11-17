@@ -24,16 +24,16 @@
             font-size: 13px;
         }
 
-        /* letra más pequeña */
         h2 {
             text-align: center;
             margin: 0;
+            font-size: 16px;
         }
 
         .header {
             width: 100%;
             border: none;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .header td {
@@ -46,9 +46,19 @@
             font-size: 13px;
         }
 
+        .seccion {
+            margin-top: 12px;
+        }
+
+        .seccion h3 {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
         .firmas {
-            margin-top: 60px;
+            margin-top: 80px;
             width: 100%;
+            border: none;
             text-align: center;
         }
 
@@ -63,82 +73,191 @@
             margin: 0 auto;
             height: 5px;
         }
+
+        .small {
+            font-size: 12px;
+            white-space: pre-line;
+        }
+
+        .firmas {
+            margin-top: 80px;
+            width: 100%;
+            border: none;
+            text-align: center;
+        }
+
+        .firmas td {
+            width: 50%;
+            vertical-align: bottom;
+            text-align: center;
+            padding: 90px 20px 15px 20px;
+            font-size: 13px;
+        }
+
+        .linea {
+            border-top: 1.5px solid #000;
+            width: 70%;
+            margin: 0 auto 10px auto;
+        }
+
+        .firmas p {
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .firmas strong {
+            display: block;
+            margin-top: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+
+        /* <-- preserva saltos de línea */
     </style>
 </head>
 
 <body>
 
-
-    <!-- Cabecera con logo y título -->
     <table class="header">
         <tr>
-
             <td style="text-align: center;">
+                <h1>TRIBUNAL CONSTITUCIONAL</h1>
                 <h2>REPORTE DE CARGO POR LOTE</h2>
-                <p>Fecha de emisión: <?= date('d/m/Y H:i:s') ?></p>
+                
             </td>
         </tr>
     </table>
 
-    <!-- Información general del lote -->
-    <?php $primero = $movimientos[0]; ?>
+    <?php
+    if (empty($movimientos)) {
+        echo "<p>No hay movimientos para mostrar.</p>";
+        exit;
+    }
+
+    // Determinar tipo del lote
+    $tiposPresentes = array_unique(array_map(fn($m) => $m['tipo_movimiento'], $movimientos));
+    $esCambio = count($tiposPresentes) > 1;
+    $tipoLote = $esCambio ? 'Cambio' : ucfirst($tiposPresentes[0]);
+
+    // Clasificación
+    $asignados = array_filter($movimientos, fn($m) => in_array($m['tipo_movimiento'], ['asignacion', 'prestamo']));
+    $retirados = array_filter($movimientos, fn($m) => $m['tipo_movimiento'] === 'retiro');
+
+    // Usuario destino
+    $usuarioDestino = null;
+    $departamentoDestino = null;
+    $localDestino = null;
+    foreach ($asignados as $m) {
+        $usuarioDestino = trim(($m['nombre'] ?? '') . ' ' . ($m['ape_paterno'] ?? '') . ' ' . ($m['ape_materno'] ?? ''));
+        $departamentoDestino = $m['departamento'] ?? '-';
+        $localDestino = $m['local'] ?? '-';
+        break;
+    }
+
+    // Si no hay asignación, usar primer movimiento
+    if (empty($usuarioDestino)) {
+        $p = $movimientos[0];
+        $usuarioDestino = trim(($p['nombre'] ?? '') . ' ' . ($p['ape_paterno'] ?? '') . ' ' . ($p['ape_materno'] ?? ''));
+        $departamentoDestino = $p['departamento'] ?? '-';
+        $localDestino = $p['local'] ?? '-';
+    }
+
+    // Observaciones únicas con saltos de línea
+    $observacionesArr = [];
+    foreach ($movimientos as $m) {
+        $obs = trim($m['observaciones'] ?? '');
+        if ($obs !== '' && !in_array($obs, $observacionesArr)) {
+            $observacionesArr[] = $obs;
+        }
+    }
+    $observaciones = empty($observacionesArr) ? '-' : implode("\n", $observacionesArr);
+
+    // Fecha
+    $fecha = date('d/m/Y H:i:s', strtotime($movimientos[0]['fecha_movimiento']));
+    ?>
+
     <div class="info">
-        <p><strong>Usuario actual:</strong>
-            <?= $primero['nombre'] . ' ' . $primero['ape_paterno'] . ' ' . $primero['ape_materno'] ?></p>
-
-        <?php if (!empty($primero['nombre_anterior'])): ?>
-            <p><strong>Usuario anterior:</strong>
-                <?= $primero['nombre_anterior'] . ' ' . $primero['apep_anterior'] . ' ' . $primero['apem_anterior'] ?></p>
-        <?php endif; ?>
-
-        <p><strong>Departamento:</strong> <?= $primero['departamento'] ?? '-' ?></p>
-        <p><strong>Local:</strong> <?= $primero['local'] ?? '-' ?></p>
-        <p><strong>Tipo de movimiento:</strong> <?= ucfirst($primero['tipo_movimiento']) ?></p>
-        <p><strong>Fecha:</strong> <?= date('d/m/Y H:i:s', strtotime($primero['fecha_movimiento'])) ?></p>
-
+        <p><strong>Tipo de Lote:</strong> <?= $tipoLote ?></p>
+        <p><strong>Usuario destino:</strong> <?= $usuarioDestino ?: '-' ?></p>
+        <p><strong>Departamento:</strong> <?= $departamentoDestino ?></p>
+        <p><strong>Local:</strong> <?= $localDestino ?></p>
+        <p><strong>Fecha:</strong> <?= $fecha ?></p>
     </div>
 
-    <!-- Tabla de bienes -->
-    <table>
-        <thead>
-            <tr>
-                <th>Código Patrimonial</th>
-                <th>Descripción</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Serie</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($movimientos as $m): ?>
-                <tr>
-                    <td><?= $m['cod_patrimonial'] ?></td>
-                    <td><?= $m['descripcion'] ?></td>
-                    <td><?= $m['marca'] ?></td>
-                    <td><?= $m['modelo'] ?></td>
-                    <td><?= $m['serie'] ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
 
-    <p><strong>Observaciones:</strong> <?= $primero['observaciones'] ?: '-' ?></p>
+    <?php if (!empty($asignados)): ?>
+        <div class="seccion">
+            <h3>Bienes ASIGNADOS (<?= count($asignados) ?>)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código Patrimonial</th>
+                        <th>Descripción</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Serie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($asignados as $m): ?>
+                        <tr>
+                            <td><?= $m['cod_patrimonial'] ?></td>
+                            <td><?= $m['descripcion'] ?></td>
+                            <td><?= $m['marca'] ?></td>
+                            <td><?= $m['modelo'] ?></td>
+                            <td><?= $m['serie'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
 
-    <!-- Firmas -->
+    <?php if (!empty($retirados)): ?>
+        <div class="seccion">
+            <h3>Bienes RETIRADOS (<?= count($retirados) ?>)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código Patrimonial</th>
+                        <th>Descripción</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Serie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($retirados as $m): ?>
+                        <tr>
+                            <td><?= $m['cod_patrimonial'] ?></td>
+                            <td><?= $m['descripcion'] ?></td>
+                            <td><?= $m['marca'] ?></td>
+                            <td><?= $m['modelo'] ?></td>
+                            <td><?= $m['serie'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+
+    <br><br>
+    <p class="small"><strong>Observaciones:</strong><br><br><?= nl2br(htmlspecialchars($observaciones)) ?></p>
+
     <table class="firmas">
         <tr>
-            <td><br>
+            <td>
                 <div class="linea"></div>
-                <p>Usuario de destino<br>
-                    <?= $primero['nombre'] . ' ' . $primero['ape_paterno'] . ' ' . $primero['ape_materno'] ?></p>
+                <p><strong><?= $usuarioDestino ?></strong></p>
             </td>
-            <td><br><br>
+            <td>
                 <div class="linea"></div>
-                <p>Técnico responsable<br><br><br>
-                    <?= $primero['usuario_registro'] ?? '________________' ?></p>
+                <p><br><strong><?= $movimientos[0]['usuario_registro'] ?? '________________' ?></strong></p>
             </td>
         </tr>
     </table>
+
 </body>
 
 </html>

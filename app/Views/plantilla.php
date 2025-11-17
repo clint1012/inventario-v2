@@ -71,7 +71,7 @@
                         <h6 class="collapse-header">General</h6>
 
                         <a class="collapse-item" href="<?= base_url("index.php/personas") ?>">Personal</a>
-                         <a class="collapse-item" href="<?= base_url("index.php/proveedor") ?>">Proveedores</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/proveedor") ?>">Proveedores</a>
                     </div>
                 </div>
             </li>
@@ -84,6 +84,14 @@
                 </a>
             </li>
 
+            <!-- Nav Item - Licencias -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url("index.php/licencias"); ?>">
+                    <i class="fas fa-bolt"></i>
+                    <span>Licencias</span>
+                </a>
+            </li>
+
             <!-- Nav Item - Pages Collapse Menu -->
             <li class="nav-item">
                 <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseThree"
@@ -93,8 +101,8 @@
                 </a>
                 <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
-                         <a class="collapse-item" href="<?= base_url("index.php/mantenimiento") ?>">Mantenimiento</a>
-                         <a class="collapse-item" href="<?= base_url("index.php/optimizacion") ?>">Optimizacion</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/mantenimiento") ?>">Mantenimiento</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/optimizacion") ?>">Optimizacion</a>
                     </div>
                 </div>
             </li>
@@ -113,7 +121,8 @@
                         <a class="collapse-item" href="<?= base_url("index.php/bienes") ?>">Inventario</a>
                         <a class="collapse-item" href="<?= base_url('movimientos') ?>">Movimientos</a>
                         <a class="collapse-item" href="<?= base_url("index.php/baja") ?>">Baja</a>
-                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i class="fas fa-network-wired mr-1"></i> IPs</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i
+                                class="fas fa-network-wired mr-1"></i> IPs</a>
 
                     </div>
                 </div>
@@ -386,6 +395,8 @@
     <!-- Scripts de Select2 (antes de tu script.js si lo usas) -->
 
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
     <script>
         var table; // variable global accesible desde otros scripts
 
@@ -401,6 +412,8 @@
                 responsive: true,
                 orderCellsTop: true,
                 fixedHeader: true,
+
+              
 
                 columnDefs: [
                     { targets: [5, 9], visible: false, searchable: true }
@@ -438,6 +451,8 @@
                     });
                 }
             });
+
+            
 
             // ==============================
             //  Filtros por columna (segunda fila del thead)
@@ -842,6 +857,7 @@
                 $('#contenedor_asignar').toggle(tipo === 'asignacion' || tipo === 'cambio');
                 $('#contenedor_prestar').toggle(tipo === 'prestamo' || tipo === 'cambio');
                 $('#contenedor_retirar').toggle(tipo === 'retiro' || tipo === 'cambio');
+
             }).trigger('change');
         });
     </script>

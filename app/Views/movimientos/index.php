@@ -5,7 +5,7 @@
     <h2>📑 Actas de Instalación por Usuario</h2>
     <a href="<?= base_url('movimientos/new') ?>" class="btn btn-primary mb-3">+ Nuevo Movimiento</a>
 
-    <table class="table table-bordered table-striped">
+    <table id="tablaMovimientos" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>Usuario</th>
@@ -18,7 +18,7 @@
         </thead>
         <tbody>
             <?php foreach ($usuarios as $mov): ?>
-                <tr>
+                <tr data-lote="<?= $mov['lote'] ?>">
                     <td><?= $mov['nombre'] . ' ' . $mov['ape_paterno'] . ' ' . $mov['ape_materno'] ?></td>
                     <td><?= date('d-m-Y H:i', strtotime($mov['fecha_movimiento'])) ?></td>
                     <td><?= $mov['departamento'] ?></td>
@@ -27,14 +27,15 @@
                     <td>
                         <a href="<?= base_url('movimientos/descargarCargoLote/' . $mov['lote']) ?>"
                             class="btn btn-sm btn-primary">PDF</a>
-                        <a href="<?= base_url('movimientos/anular/' . $mov['lote']) ?>"
-                            class="btn btn-sm btn-danger">Anular</a>
+                        <button class="btn btn-sm btn-danger btnAnular" data-id="<?= $mov['id'] ?>"
+                            data-lote="<?= $mov['lote'] ?>">
+                            Anular
+                        </button>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-
 </div>
 
 <!-- Modal para confirmar anulación -->
@@ -65,10 +66,18 @@
         </div>
     </div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function () {
+
+        // Inicializar DataTable
+        const table = $('table').DataTable({
+            responsive: true,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json"
+            }
+        });
 
         // Abrir modal de confirmación
         $(document).on('click', '.btnAnular', function () {
@@ -80,63 +89,43 @@
             $('#modalAnular').modal('show');
         });
 
+        // Confirmar anulación
         $('#confirmarAnulacion').on('click', function () {
-            const idMovimiento = $('#idMovimiento').val();
             const loteMovimiento = $('#loteMovimiento').val();
             const motivo = $('#motivoAnulacion').val().trim();
 
             if (motivo === '') {
-                alert('Por favor, ingrese un motivo de anulación.');
+                Swal.fire('Atención', 'Por favor ingrese un motivo de anulación.', 'warning');
                 return;
             }
 
             $.ajax({
-                url: '<?= base_url('movimientos/anular') ?>/' + idMovimiento,
+                url: "<?= base_url('movimientos/anular/') ?>" + loteMovimiento,
                 type: 'POST',
-                data: {
-                    motivo_anulacion: motivo,
-                    lote: loteMovimiento // 👈 se envía el lote también
-                },
+                data: { motivo_anulacion: motivo },
                 dataType: 'json',
                 success: function (response) {
                     if (response.status === 'success') {
-                        // ✅ Oculta todas las filas con el mismo lote
-                        $('tr[data-lote="' + loteMovimiento + '"]').fadeOut(500, function () {
-                            $(this).remove();
-                        });
+                        // eliminar la fila del DataTable
+                        const row = $('tr[data-lote="' + loteMovimiento + '"]');
+                        table.row(row).remove().draw(false);
+
                         $('#modalAnular').modal('hide');
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Anulado',
+                            text: 'El lote fue anulado correctamente.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
                     } else {
-                        alert(response.message || 'Ocurrió un error al anular el movimiento.');
+                        Swal.fire('Error', response.message || 'Ocurrió un error.', 'error');
                     }
                 },
-                error: function () {
-                    alert('Error en la solicitud. Verifica la consola o el backend.');
-                }
-            });
-        });
-
-        // ==============================
-        //  Evitar duplicados por lote
-        // ==============================
-        $('#bienesTable').on('click', '.eliminarLote', function () {
-            var lote = $(this).data('lote'); // el atributo data-lote que identifica el grupo
-
-            // Confirmación
-            Swal.fire({
-                title: '¿Eliminar todo el lote?',
-                text: 'Esto eliminará todas las filas con el mismo número de lote.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Eliminar todas las filas que tengan el mismo lote
-                    table.rows(function (idx, data, node) {
-                        return data[1] === lote; // Ajusta el índice de columna [1] según tu tabla
-                    }).remove().draw();
-
-                    Swal.fire('Eliminado', 'Todas las filas del lote fueron eliminadas.', 'success');
+                error: function (xhr) {
+                    console.error('❌ Backend error:', xhr.responseText);
+                    Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
                 }
             });
         });
