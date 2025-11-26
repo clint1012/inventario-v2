@@ -9,4 +9,15 @@ class UsuariosRolesModel extends Model
     protected $allowedFields = ['usuario_id','rol_id'];
     protected $returnType = 'array';
     public $incrementing = false;
+
+
+    public function getRolesByUsuario($usuarioId)
+{
+    return $this->select('roles.id, roles.nombre')
+        ->join('roles', 'roles.id = usuarios_roles.rol_id')
+        ->where('usuarios_roles.usuario_id', $usuarioId)
+        ->findAll();
 }
+}
+
+

@@ -32,6 +32,12 @@
                 value="<?= date('Y-m-d\TH:i') ?>" required>
         </div>
 
+        <!-- Fecha límite del préstamo (se mostrará solo si tipo = prestamo) -->
+        <div id="contenedor_fecha_prestamo" class="form-group" style="display: none;">
+            <label for="fecha_limite">Fecha límite del préstamo</label>
+            <input type="date" name="fecha_limite" id="fecha_limite" class="form-control">
+        </div>
+
         <!-- Persona -->
         <div class="form-group">
             <label for="id_personas">Persona</label>

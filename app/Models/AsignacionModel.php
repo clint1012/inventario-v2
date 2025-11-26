@@ -22,7 +22,8 @@ class AsignacionModel extends Model
         'observaciones',
         'lote',
         'anulado',
-        'motivo_anulacion'
+        'motivo_anulacion',
+        'fecha_limite_prestamo'
     ];
 
     protected $useTimestamps = true;
@@ -127,31 +128,77 @@ class AsignacionModel extends Model
     }
 
     public function getResumenUsuariosAgrupado()
-{
-    $movimientos = $this->db->table('movimientos m')
-        ->select('m.lote, m.tipo_movimiento, m.fecha_movimiento, m.id_personas, m.anulado, 
-                 p.nombre, p.ape_paterno, p.ape_materno,
-                 d.nombre as departamento, l.nombre as local')
-        ->join('personas p', 'p.id = m.id_personas', 'left')
-        ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
-        ->join('locales l', 'l.id = m.id_locales', 'left')
-        ->groupBy('m.lote') // ✅ agrupamos por lote
-        ->orderBy('m.fecha_movimiento', 'DESC')
-        ->get()
-        ->getResultArray();
+    {
+        $movimientos = $this->db->table('movimientos m')
+            ->select("
+            m.lote,
+            m.fecha_movimiento,
+            m.anulado,
 
-    // Obtener los bienes de cada lote
-    foreach ($movimientos as &$mov) {
-        $mov['bienes'] = $this->db->table('movimientos m')
-            ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie')
-            ->join('bienes b', 'b.id = m.id_bienes')
-            ->where('m.lote', $mov['lote'])
+            -- Determinar automáticamente si el lote es CAMBIO
+            CASE
+                WHEN SUM(m.tipo_movimiento = 'asignacion') > 0 
+                 AND SUM(m.tipo_movimiento = 'retiro') > 0 THEN 'cambio'
+                ELSE MAX(m.tipo_movimiento)
+            END AS tipo_movimiento,
+
+            -- Usuario destino (si es CAMBIO se usa el usuario de la asignación)
+            COALESCE(
+                MAX(CASE WHEN m.tipo_movimiento = 'asignacion' THEN p.nombre END),
+                MAX(p.nombre)
+            ) AS nombre_destino,
+
+            COALESCE(
+                MAX(CASE WHEN m.tipo_movimiento = 'asignacion' THEN p.ape_paterno END),
+                MAX(p.ape_paterno)
+            ) AS apep_destino,
+
+            COALESCE(
+                MAX(CASE WHEN m.tipo_movimiento = 'asignacion' THEN p.ape_materno END),
+                MAX(p.ape_materno)
+            ) AS apem_destino,
+
+            -- Usuario anterior (para retiros y cambios)
+            MAX(p2.nombre) AS nombre_anterior,
+            MAX(p2.ape_paterno) AS apep_anterior,
+            MAX(p2.ape_materno) AS apem_anterior,
+
+            -- Departamento y local destino
+            MAX(d.nombre) AS departamento,
+            MAX(l.nombre) AS local,
+
+            -- Departamento y local anterior
+            MAX(d2.nombre) AS departamento_anterior,
+            MAX(l2.nombre) AS local_anterior
+        ")
+            ->join('personas p', 'p.id = m.id_personas', 'left')
+            ->join('personas p2', 'p2.id = m.id_persona_anterior', 'left')
+            ->join('departamentos d', 'd.id = m.id_departamentos', 'left')
+            ->join('locales l', 'l.id = m.id_locales', 'left')
+            ->join('departamentos d2', 'd2.id = m.id_departamento_anterior', 'left')
+            ->join('locales l2', 'l2.id = m.id_local_anterior', 'left')
+            ->groupBy('m.lote')
+            ->orderBy('m.fecha_movimiento', 'DESC')
             ->get()
             ->getResultArray();
+
+        // Obtener bienes de cada lote
+        foreach ($movimientos as &$mov) {
+            $mov['bienes'] = $this->db->table('movimientos m')
+                ->select('b.cod_patrimonial, b.descripcion, b.marca, b.modelo, b.serie')
+                ->join('bienes b', 'b.id = m.id_bienes')
+                ->where('m.lote', $mov['lote'])
+                ->get()
+                ->getResultArray();
+        }
+
+        return $movimientos;
     }
 
-    return $movimientos;
-}
+
+
+
+
 
 
 }

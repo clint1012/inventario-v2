@@ -214,7 +214,20 @@
                         </li>
 
                         <div class="topbar-divider d-none d-sm-block"></div>
-
+                        <!-- Nav Item - Alerts -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link" href="#" id="notificacionesBtn" role="button" data-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span id="contadorNotificaciones" class="badge badge-danger"
+                                    style="display:none;">0</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="notificacionesBtn">
+                                <h6 class="dropdown-header">Licencias por vencer</h6>
+                                <div id="listaNotificaciones" class="px-3">
+                                    <small>No hay alertas</small>
+                                </div>
+                            </div>
+                        </li>
                         <!-- Nav Item - User Information -->
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
@@ -413,7 +426,7 @@
                 orderCellsTop: true,
                 fixedHeader: true,
 
-              
+
 
                 columnDefs: [
                     { targets: [5, 9], visible: false, searchable: true }
@@ -452,7 +465,7 @@
                 }
             });
 
-            
+
 
             // ==============================
             //  Filtros por columna (segunda fila del thead)
@@ -740,6 +753,52 @@
     </script>
 
 
+    <!-- ============================== -->
+    <!--  Script de notificaciones (campanita) -->
+    <!-- ============================== -->
+    <script>
+        function cargarNotificaciones() {
+            $.get("<?= base_url('licencias/proximas-vencer'); ?>", function (response) {
+
+                const total = response.cantidad;
+                const lista = response.licencias;
+
+                // CONTADOR ROJO
+                if (total > 0) {
+                    $('#contadorNotificaciones')
+                        .text(total)
+                        .show();
+                } else {
+                    $('#contadorNotificaciones').hide();
+                }
+
+                // LISTA DETALLADA
+                let html = "";
+
+                if (total === 0) {
+                    html = "<small>No hay licencias próximas a vencer</small>";
+                } else {
+                    lista.forEach(item => {
+                        html += `
+                    <div class="alert alert-warning p-2 mb-2">
+                        <b>${item.nombre_software}</b><br>
+                        Expira: ${item.fecha_expiracion}
+                    </div>
+                `;
+                    });
+                }
+
+                $("#listaNotificaciones").html(html);
+            });
+        }
+
+        // Cargar al iniciar
+        cargarNotificaciones();
+
+        // Actualizar cada 60 segundos
+        setInterval(cargarNotificaciones, 60000);
+    </script>
+
 
 
     <!-- ============================== -->
@@ -858,6 +917,13 @@
                 $('#contenedor_prestar').toggle(tipo === 'prestamo' || tipo === 'cambio');
                 $('#contenedor_retirar').toggle(tipo === 'retiro' || tipo === 'cambio');
 
+                // Mostrar input de fecha límite solo si es prestamo
+                if (tipo === 'prestamo') {
+                    $('#contenedor_fecha_prestamo').show();
+                } else {
+                    $('#contenedor_fecha_prestamo').hide();
+                    $('#fecha_limite').val(''); // limpiar valor
+                }
             }).trigger('change');
         });
     </script>

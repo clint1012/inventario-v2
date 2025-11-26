@@ -35,6 +35,7 @@ $routes->get('optimizacion/buscarBien/(:segment)', 'Optimizacion::buscarBien/$1'
 $routes->get('bienes/getPorCodigo/(:any)', 'Bienes::getPorCodigo/$1', ['filter' => 'auth']);
 
 // Rutas adicionales licencias
+$routes->get('licencias/proximas-vencer', 'Licencias::proximasAVencer', ['filter' => 'auth']);
 
 // ======================================================
 //  Proveedor — REST principal
@@ -146,3 +147,6 @@ $routes->group('usuarios', ['filter' => 'auth'], function ($routes) {
 $routes->get('perfil', 'PerfilController::index', ['filter' => 'auth']);
 $routes->post('perfil/guardar', 'PerfilController::actualizarPerfil', ['filter' => 'auth']);
 $routes->post('perfil/foto', 'PerfilController::actualizarFoto', ['filter' => 'auth']);
+
+
+$routes->get('debug/fcpath', 'Debug::fcpath');

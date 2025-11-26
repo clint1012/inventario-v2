@@ -54,6 +54,7 @@ class Asignacion extends BaseController
         $fecha = $this->request->getPost('fecha_movimiento')
             ? $this->request->getPost('fecha_movimiento') . ' ' . date('H:i:s')
             : date('Y-m-d H:i:s');
+        $fechaLimite = $this->request->getPost('fecha_limite');
         $observaciones = $this->request->getPost('observaciones') ?? '';
 
         // 🔑 Generar lote único
@@ -66,6 +67,11 @@ class Asignacion extends BaseController
         } elseif ($tipo === 'prestamo') {
             $bienes = $this->request->getPost('bienes_prestar');
             $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
+
+        } elseif ($tipo === 'prestamo') {
+            $bienes = $this->request->getPost('bienes_prestar');
+            $fechaLimite = $this->request->getPost('fecha_limite'); // ✅ nuevo
+            $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote, $fechaLimite);
 
         } elseif ($tipo === 'retiro') {
             $bienes = $this->request->getPost('bienes_retirar');
@@ -102,7 +108,9 @@ class Asignacion extends BaseController
                 'fecha_movimiento' => $fecha,
                 'observaciones' => $observaciones,
                 'lote' => $lote,
-                'id_persona_anterior' => $dueñoAnterior // 📌 historial
+                'id_persona_anterior' => $dueñoAnterior, // 📌 historial
+                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_local_anterior' => $bien['id_locales'],
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -115,7 +123,7 @@ class Asignacion extends BaseController
     }
 
     // 📌 Procesar prestamos
-    private function procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote)
+    private function procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote, $fechaLimite)
     {
         if (empty($bienes) || !is_array($bienes))
             return;
@@ -134,7 +142,10 @@ class Asignacion extends BaseController
                 'fecha_movimiento' => $fecha,
                 'observaciones' => $observaciones,
                 'lote' => $lote,
-                'id_persona_anterior' => $dueñoAnterior // 📌 historial
+                'id_persona_anterior' => $dueñoAnterior, // 📌 historial
+                'fecha_limite_prestamo' => $fechaLimite,
+                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_local_anterior' => $bien['id_locales'],
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -165,7 +176,9 @@ class Asignacion extends BaseController
                 'fecha_movimiento' => $fecha,
                 'observaciones' => $observaciones,
                 'lote' => $lote,
-                'id_persona_anterior' => $dueñoAnterior
+                'id_persona_anterior' => $dueñoAnterior,
+                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_local_anterior' => $bien['id_locales'],
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -308,32 +321,53 @@ class Asignacion extends BaseController
     public function descargarCargoLote($lote)
     {
         $movimientos = $this->asignacionModel
-            ->select('movimientos.*, bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie, 
-        personas.nombre, personas.ape_paterno, personas.ape_materno, p2.nombre as nombre_anterior, p2.ape_paterno as apep_anterior, 
-        p2.ape_materno as apem_anterior, departamentos.nombre AS departamento, locales.nombre AS local')
+            ->select('
+            movimientos.*,
+            bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie,
+            personas.nombre, personas.ape_paterno, personas.ape_materno,
+            p2.nombre AS nombre_anterior, p2.ape_paterno AS apep_anterior, p2.ape_materno AS apem_anterior,
+            departamentos.nombre AS departamento,
+            locales.nombre AS local,
+            dep2.nombre AS departamento_anterior,
+            loc2.nombre AS local_anterior
+        ')
             ->where('lote', $lote)
             ->join('bienes', 'bienes.id = movimientos.id_bienes', 'left')
             ->join('personas', 'personas.id = movimientos.id_personas', 'left')
-            ->join('personas as p2', 'p2.id = movimientos.id_persona_anterior', 'left')
+            ->join('personas AS p2', 'p2.id = movimientos.id_persona_anterior', 'left')
             ->join('departamentos', 'departamentos.id = movimientos.id_departamentos', 'left')
             ->join('locales', 'locales.id = movimientos.id_locales', 'left')
+
+            // 🔥 IMPORTANTE: JOINS DEL ANTERIOR
+            ->join('departamentos AS dep2', 'dep2.id = movimientos.id_departamento_anterior', 'left')
+            ->join('locales AS loc2', 'loc2.id = movimientos.id_local_anterior', 'left')
+
             ->findAll();
+
         if (!$movimientos) {
             return redirect()->to('/movimientos')
                 ->with('error', 'No se encontraron movimientos para este lote.');
         }
+
+        // Render normal
         $html = view('movimientos/pdf_lote', [
             'movimientos' => $movimientos
         ]);
-        $options = new Options();
-        $options->set('isRemoteEnabled', true);
-        // Permitir imágenes externas (URLs) o base_url 
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        $dompdf->stream("cargo_lote_$lote.pdf", ["Attachment" => false]);
+
+        // Snappy
+        $snappy = new \Knp\Snappy\Pdf('C:\ARCHIV~1\wkhtmltopdf\bin\wkhtmltopdf.exe');
+
+        $snappy->setOption('encoding', 'UTF-8');
+        $snappy->setOption('enable-local-file-access', true);
+        $snappy->setOption('page-size', 'A4');
+
+        return $this->response
+            ->setContentType('application/pdf')
+            ->setBody(
+                $snappy->getOutputFromHtml($html)
+            );
     }
+
 
 
     // 📄 Generar Acta consolidada por usuario

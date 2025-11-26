@@ -40,6 +40,12 @@
             <option value="lenovo" <?= $bien['marca'] === 'lenovo' ? 'selected' : '' ?>>Lenovo</option>
             <option value="dell" <?= $bien['marca'] === 'dell' ? 'selected' : '' ?>>Dell</option>
             <option value="microsoft" <?= $bien['marca'] === 'microsoft' ? 'selected' : '' ?>>Microsoft</option>
+            <option value="viewsonic" <?= $bien['marca'] === 'viewsonic' ? 'selected' : '' ?>>Viewsonic</option>
+            <option value="toshiba" <?= $bien['marca'] === 'toshiba' ? 'selected' : '' ?>>Toshiba</option>
+            <option value="epson" <?= $bien['marca'] === 'epson' ? 'selected' : '' ?>>Epson</option>
+            <option value="xerox" <?= $bien['marca'] === 'xerox' ? 'selected' : '' ?>>Xerox</option>
+            <option value="LG" <?= $bien['marca'] === 'LG' ? 'selected' : '' ?>>LG</option>
+            <option value="Mikrotik" <?= $bien['marca'] === 'Mikrotik' ? 'selected' : '' ?>>Mikrotik</option>
             <option value="otro" <?= $bien['marca'] === 'otro' ? 'selected' : '' ?>>Otro</option>
         </select>
     </div>
@@ -65,7 +71,7 @@
         <select class="form-select form-control" id="procesador" name="procesador" required
             onchange="toggleOtroProcesador(this)">
             <option value="">Seleccionar</option>
-            <option value="core_i3" <?= $bien['procesador'] === 'core_i3' ? 'selected' : '' ?>>Core i3</option>
+            <option value="core i3" <?= $bien['procesador'] === 'core i3' ? 'selected' : '' ?>>Core i3</option>
             <option value="core i5-7ma" <?= $bien['procesador'] === 'core i5-7ma' ? 'selected' : '' ?>>core i5-7ma</option>
             <option value="core i5-9na" <?= $bien['procesador'] === 'core i5-9na' ? 'selected' : '' ?>>core i5-9na</option>
             <option value="core i7-7ma" <?= $bien['procesador'] === 'core i7-7ma' ? 'selected' : '' ?>>core i7-7ma</option>
@@ -74,9 +80,11 @@
             </option>
             <option value="core i7-11va" <?= $bien['procesador'] === 'core i7-11va' ? 'selected' : '' ?>>core i7-11va
             </option>
+            <option value="core i7-14va" <?= $bien['procesador'] === 'core i7-14va' ? 'selected' : '' ?>>core i7-14va
+            </option>
             <option value="core i7-ultra" <?= $bien['procesador'] === 'core i7-ultra' ? 'selected' : '' ?>>core i7-ultra
             </option>
-            <option value="NO_APLICA" <?= $bien['procesador'] === 'NO_APLICA' ? 'selected' : '' ?>>No Aplica</option>
+            <option value="NO APLICA" <?= $bien['procesador'] === 'NO APLICA' ? 'selected' : '' ?>>No Aplica</option>
             <option value="otro" <?= $bien['procesador'] === 'otro' ? 'selected' : '' ?>>Otro</option>
         </select>
     </div>
@@ -94,10 +102,13 @@
         <select class="form-select form-control" id="memoria" name="memoria" required
             onchange="toggleOtraMemoria(this)">
             <option value="">Seleccionar</option>
-            <option value="4GB" <?= $bien['memoria'] === '4GB' ? 'selected' : '' ?>>4GB</option>
-            <option value="8GB" <?= $bien['memoria'] === '8GB' ? 'selected' : '' ?>>8GB</option>
-            <option value="16GB" <?= $bien['memoria'] === '16GB' ? 'selected' : '' ?>>16GB</option>
-            <option value="NO_APLICA" <?= $bien['memoria'] === 'NO_APLICA' ? 'selected' : '' ?>>No Aplica</option>
+            <option value="4gb" <?= $bien['memoria'] === '4gb' ? 'selected' : '' ?>>4GB</option>
+            <option value="6gb" <?= $bien['memoria'] === '6gb' ? 'selected' : '' ?>>6GB</option>
+            <option value="8gb" <?= $bien['memoria'] === '8gb' ? 'selected' : '' ?>>8GB</option>
+            <option value="10gb" <?= $bien['memoria'] === '10gb' ? 'selected' : '' ?>>10GB</option>
+            <option value="12gb" <?= $bien['memoria'] === '12gb' ? 'selected' : '' ?>>12GB</option>
+            <option value="16gb" <?= $bien['memoria'] === '16gb' ? 'selected' : '' ?>>16GB</option>
+            <option value="NO APLICA" <?= $bien['memoria'] === 'NO APLICA' ? 'selected' : '' ?>>No Aplica</option>
             <option value="otro" <?= $bien['memoria'] === 'otro' ? 'selected' : '' ?>>Otro</option>
         </select>
     </div>
@@ -107,19 +118,41 @@
     </div>
     <!--Fin select memoria-->
 
+    <!--Inicio select Tipo de Disco-->
+    <div class="col-md 6">
+        <label for="tipo_disco" class="form-label">Tipo de disco</label>
+        <select name="tipo_disco" id="tipo_disco" class="form-select form-control">
+            <option value="">Seleccionar</option>
+            <option value="M.2" <?= $bien['tipo_disco'] === 'M.2' ? 'selected' : '' ?>>M.2</option>
+            <option value="SSD 2.5" <?= $bien['tipo_disco'] === 'SSD 2.5' ? 'selected' : '' ?>>SSD 2.5</option>
+            <option value="HDD" <?= $bien['tipo_disco'] === 'HDD' ? 'selected' : '' ?>>HDD</option>
+            <option value="NO APLICA" <?= $bien['tipo_disco'] === 'NO APLICA' ? 'selected' : '' ?>>NO APLICA</option>
+        </select>
+    </div>
+    <!--Fin select Tipo de Disco-->
+
+    <!--Inicio input espacio disco-->
+
+    <div class="col-md-6">
+        <label for="espacio_disco" class="form-label"> Espacio de disco</label>
+        <input type="text" class="form-control" id="espacio_disco" name="espacio_disco" value="<?= $bien['espacio_disco'] ?>">
+    </div>
+
+    <!--Fin input espacio disco-->
+
     <!--Inicio select sistema_operativo-->
     <div class="col-md-6">
         <label for="sistema_operativo" class="form-label">Sistema Operativo</label>
         <select class="form-select form-control" id="sistema_operativo" name="sistema_operativo" required
             onchange="toggleOtroSO(this)">
             <option value="">Seleccionar</option>
-            <option value="windows 10" <?= $bien['sistema_operativo'] === 'windows 10' ? 'selected' : '' ?>>Windows 10
+            <option value="Windows 10" <?= $bien['sistema_operativo'] === 'Windows 10' ? 'selected' : '' ?>>Windows 10
             </option>
-            <option value="windows 11" <?= $bien['sistema_operativo'] === 'windows 11' ? 'selected' : '' ?>>Windows 11
+            <option value="Windows 11" <?= $bien['sistema_operativo'] === 'Windows 11' ? 'selected' : '' ?>>Windows 11
             </option>
-            <option value="linux" <?= $bien['sistema_operativo'] === 'linux' ? 'selected' : '' ?>>Linux</option>
-            <option value="macos" <?= $bien['sistema_operativo'] === 'macos' ? 'selected' : '' ?>>MacOS</option>
-            <option value="NO_APLICA" <?= old('sistema_operativo') === 'NO_APLICA' || $bien['sistema_operativo'] === 'NO_APLICA' ? 'selected' : '' ?>>No Aplica</option>
+            <option value="Linux" <?= $bien['sistema_operativo'] === 'Linux' ? 'selected' : '' ?>>Linux</option>
+            <option value="Macos" <?= $bien['sistema_operativo'] === 'Macos' ? 'selected' : '' ?>>MacOS</option>
+            <option value="NO APLICA" <?= old('sistema_operativo') === 'NO APLICA' || $bien['sistema_operativo'] === 'NO APLICA' ? 'selected' : '' ?>>No Aplica</option>
             <option value="otro" <?= $bien['sistema_operativo'] === 'otro' ? 'selected' : '' ?>>Otro</option>
         </select>
     </div>
@@ -132,6 +165,27 @@
     </div>
 
     <!--Fin select sistema_operativo-->
+
+    <!--Inicio select Office-->
+
+    <div class="col-md-6">
+        <label for="ver_office" class="form-label">Version de Office</label>
+        <select name="ver_office" id="ver_office" class="form-select form-control">
+            <option value="">Seleccionar</option>
+            <option value="Microsoft 365" <?= $bien['ver_office'] === 'Microsoft 365' ? 'selected' : '' ?>>Microsoft 365</option>
+            <option value="Microsoft Office Hogar y Empresas 2016" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2016' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2016</option>
+            <option value="Microsoft Office Hogar y Empresas 2019" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2019' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2019</option>
+            <option value="Microsoft Office Hogar y Empresas 2021" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2021' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2021</option>
+            <option value="Microsoft Office Hogar y Empresas 2024" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2024' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2024</option>
+            <option value="Microsoft Office Profesional 2021" <?= $bien['ver_office'] === 'Microsoft Profesional 2021' ? 'selected' : '' ?>>Microsoft Profesional 2021</option>
+            <option value="Microsoft Office LTSC Standard 2021" <?= $bien['ver_office'] === 'Microsoft Office LTSC Standard 2021' ? 'selected' : '' ?>>Microsoft Office LTSC Standard 2021</option>
+            <option value="Microsoft Office Standard 2007" <?= $bien['ver_office'] === 'Microsoft Office Standard 2007' ? 'selected' : '' ?>>Microsoft Office Standard 2007</option>
+            <option value="NO APLICA" <?= $bien['ver_office'] === 'NO APLICA' ? 'selected' : '' ?>>NO APLICA</option>
+        </select>
+    </div>    
+
+    <!--Fin select Office-->
+
 
     <div class="col-md-6">
         <label for="estado" class="form-label">Estado</label>
@@ -150,14 +204,28 @@
     </div>
 
     <div class="col-md-6">
+        <label for="num_doc_compra" class="form-label">Numero documento de compra</label>
+        <input type="text" class="form-control" id="num_doc_compra" name="num_doc_compra"
+            value="<?= $bien['num_doc_compra'] ?>">
+    </div>
+
+    <div class="col-md-6">
         <label for="años_garantia" class="form-label">Años Garantia</label>
         <input type="text" class="form-control" id="años_garantia" name="años_garantia"
             value="<?= $bien['años_garantia'] ?>">
     </div>
 
     <div class="col-md-6">
-        <label for="proveedor" class="form-label">Proveedor</label>
-        <input type="text" class="form-control" id="proveedor" name="proveedor" value="<?= $bien['proveedor'] ?>">
+        <label for="proveedor_id" class="form-label">Proveedor</label>
+        <select class="form-control" id="proveedor_id" name="proveedor_id">
+            <option value="">Seleccione proveedor</option>
+
+            <?php foreach ($proveedores as $prov): ?>
+                <option value="<?= $prov['id'] ?>" <?= (isset($bien['proveedor_id']) && $prov['id'] == $bien['proveedor_id']) ? 'selected' : '' ?>>
+                    <?= $prov['nombre'] ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
     </div>
 
     <div class="col-md-6">
@@ -190,7 +258,10 @@
                 </option>
             <?php endforeach; ?>
         </select>
-    </div><br><br><br>
+    </div>
+    
+    <br><br><br>
+
     <div class="col-12" style="padding-top: 10px;">
         <a href="#" onclick="abrirModalMantenimiento(<?= $bien['id'] ?>)" class="btn btn-secondary"> Solicitar
             mantenimiento</a>
@@ -259,7 +330,8 @@
     }
 
     function toggleOtroProcesador(selectElement) {
-        const otroProcesadorDiv = document.getElementById('otroProcesadorDiv');
+        const otroProcesadorDiv = document.get
+        ElementById('otroProcesadorDiv');
         if (selectElement.value === 'otro') {
             otroProcesadorDiv.style.display = 'block';
         } else {

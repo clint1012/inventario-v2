@@ -56,4 +56,19 @@ class Licencias extends ResourceController
         }
         return $this->failNotFound('No se pudo eliminar la licencia');
     }
+
+    public function proximasAVencer()
+    {
+        $diasAviso = 30;
+
+        $licencias = $this->model
+            ->where('fecha_expiracion IS NOT NULL')
+            ->where('fecha_expiracion <=', date('Y-m-d', strtotime("+$diasAviso days")))
+            ->findAll();
+
+        return $this->respond([
+            "cantidad" => count($licencias),
+            "licencias" => $licencias
+        ]);
+    }
 }

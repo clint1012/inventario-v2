@@ -7,6 +7,8 @@ use App\Models\BienesModel;
 use App\Models\DepartamentosModel;
 use App\Models\LocalesModel;
 use App\Models\PersonasModel;
+use App\Models\ProveedorModel;
+
 
 
 class Bienes extends BaseController
@@ -21,11 +23,7 @@ class Bienes extends BaseController
     }
 
     protected $helpers = ['form'];
-    /**
-     * Return an array of resource objects, themselves in array format.
-     *
-     * @return ResponseInterface
-     */
+   
     public function index()
     {
         //Obtener los bienes
@@ -63,78 +61,71 @@ class Bienes extends BaseController
         return view('bienes/index', $data);
     }
 
-    /**
-     * Return the properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
+    
     public function show($id = null)
-    {
-        if ($id === null) {
-            return redirect()->route('bienes');
-        }
-
-        $bienesModel = new BienesModel();
-        $departamentosModel = new DepartamentosModel();
-        $personasModel = new PersonasModel(); // Instancia del modelo Personas
-
-        // Obtener los detalles del bien
-        $bien = $bienesModel->find($id);
-
-        if (!$bien) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException("Bien no encontrado.");
-        }
-
-        // Obtener la persona asociada al bien
-        if ($bien['id_personas']) {
-            $persona = $personasModel->find($bien['id_personas']);
-            $bien['persona_nombre'] = $persona ? $persona['nombre_completo'] : 'No asignado';
-        } else {
-            $bien['persona_nombre'] = 'No asignado';
-        }
-
-        // Obtener todos los departamentos
-        $departamentos = $departamentosModel->findAll();
-        $departamentosArray = array_column($departamentos, 'nombre', 'id'); // Crear un array con el ID como clave y el nombre como valor
-
-        // Asignar los nombres de los departamentos a los bienes
-        $bien['nombre_departamento'] = $departamentosArray[$bien['id_departamento']] ?? 'Desconocido';
-
-        // Pasar los datos a la vista
-        $data['bien'] = $bien;
-        $data['departamentos'] = $departamentos;
-
-        return view('bienes/ver', $data);
+{
+    if ($id === null) {
+        return redirect()->route('bienes');
     }
 
-    /**
-     * Return a new resource object, with default properties.
-     *
-     * @return ResponseInterface
-     */
+    $bienesModel = new BienesModel();
+    $departamentosModel = new DepartamentosModel();
+    $personasModel = new PersonasModel();
+    $proveedorModel = new ProveedorModel(); // ← AGREGAR ESTO
+
+    // Obtener los detalles del bien
+    $bien = $bienesModel->find($id);
+
+    if (!$bien) {
+        throw new \CodeIgniter\Exceptions\PageNotFoundException("Bien no encontrado.");
+    }
+
+    // Obtener la persona asociada (si existe)
+    if ($bien['id_personas']) {
+        $persona = $personasModel->find($bien['id_personas']);
+        $bien['persona_nombre'] = $persona ? $persona['nombre_completo'] : 'No asignado';
+    } else {
+        $bien['persona_nombre'] = 'No asignado';
+    }
+
+    // Obtener nombre del proveedor
+    if (!empty($bien['proveedor_id'])) {
+        $proveedor = $proveedorModel->find($bien['proveedor_id']);
+        $bien['proveedor_nombre'] = $proveedor ? $proveedor['nombre'] : 'No definido';
+    } else {
+        $bien['proveedor_nombre'] = 'No definido';
+    }
+
+    // Departamentos
+    $departamentos = $departamentosModel->findAll();
+
+    $data['bien'] = $bien;
+    $data['departamentos'] = $departamentos;
+
+    return view('bienes/ver', $data);
+}
+
+
+    
     public function new()
     {
         // Crear instancias de los modelos
         $departamentosModel = new DepartamentosModel();
         $personasModel = new PersonasModel();
         $localesModel = new LocalesModel();
+        $proveedorModel = new ProveedorModel();
 
         // Obtener los datos de departamentos y personas
         $data['departamentos'] = $departamentosModel->findAll();
         $data['personas'] = $personasModel->findAll();
         $data['locales'] = $localesModel->findAll();
+        $data['proveedores'] = $proveedorModel->findAll();
 
         // Pasar los datos a la vista
         return view('bienes/nuevo', $data);
     }
 
-    /**
-     * Create a new resource object, from "posted" parameters.
-     *
-     * @return ResponseInterface
-     */
+    
     public function create()
     {
         $reglas = [
@@ -162,11 +153,16 @@ class Bienes extends BaseController
             'serie',
             'procesador',
             'memoria',
+            'tipo_disco',
+            'espacio_disco',
             'sistema_operativo',
+            'ver_office',
+            'Ip',
             'estado',
             'fecha_adquisicion',
             'años_garantia',
-            'proveedor',
+            'proveedor_id',
+            'num_doc_compra',
             'departamento',
             'id_personas',
             'id_locales'
@@ -186,9 +182,14 @@ class Bienes extends BaseController
             'serie' => trim($post['serie']),
             'procesador' => trim($procesador),
             'memoria' => trim($memoria),
+            'tipo_disco'=> trim($post['tipo_disco']),
+            'espacio_disco'=> trim($post['espacio_disco']),
             'sistema_operativo' => trim($sistema_operativo),
+            'ver_office'=> trim($post['ver_office']),
+            'Ip'=> trim($post['Ip']),
             'años_garantia' => trim($post['años_garantia']),
-            'proveedor' => trim($post['proveedor']),
+            'proveedor_id' => trim($post['proveedor_id']),
+            'num_doc_compra'=> trim($post['num_doc_compra']),
             'estado' => trim($post['estado']),
             'fecha_adquisicion' => trim($post['fecha_adquisicion']),
             'id_departamento' => trim($post['departamento']),
@@ -202,13 +203,7 @@ class Bienes extends BaseController
         return redirect()->to('bienes');
     }
 
-    /**
-     * Return the editable properties of a resource object.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
+    
     public function edit($id = null)
     {
         if ($id == null) {
@@ -219,12 +214,15 @@ class Bienes extends BaseController
         $departamentosModel = new DepartamentosModel();
         $personasModel = new PersonasModel(); // Instancia del modelo Personas
         $localesModel = new LocalesModel(); // Instancia del modelo Locales
+        $proveedorModel = new ProveedorModel();
 
         // Obtener datos necesarios para la vista
         $data['departamentos'] = $departamentosModel->findAll();
         $data['personas'] = $personasModel->findAll(); // Obtener todas las personas
         $data['locales'] = $localesModel->findAll(); // Obtener todos los locales
         $data['bien'] = $bienesModel->find($id);
+        $data['proveedores'] = $proveedorModel->findAll();
+
 
         if (!$data['bien']) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException("Bien no encontrado.");
@@ -237,13 +235,7 @@ class Bienes extends BaseController
         return view('bienes/editar', $data);
     }
 
-    /**
-     * Add or update a model resource, from "posted" properties.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
+    
     public function update($id = null)
     {
         if (!$this->request->is('put') || $id == null) {
@@ -276,13 +268,19 @@ class Bienes extends BaseController
             'serie',
             'procesador',
             'memoria',
+            'tipo_disco',
+            'espacio_disco',
             'sistema_operativo',
+            'ver_office',
+            'Ip',
             'estado',
             'fecha_adquisicion',
             'años_garantia',
-            'proveedor',
+            'proveedor_id',
+            'num_doc_compra',
+            'departamento',
             'id_personas',
-            'departamento'
+            'id_locales'
         ]);
 
         $marca = $post['marca'] === 'otro' ? $this->request->getPost('otraMarca') : $post['marca'];
@@ -300,25 +298,25 @@ class Bienes extends BaseController
             'serie' => trim($post['serie']),
             'procesador' => trim($procesador),
             'memoria' => trim($memoria),
+            'tipo_disco'=> trim($post['tipo_disco']),
+            'espacio_disco'=> trim($post['espacio_disco']),
             'sistema_operativo' => trim($sistema_operativo),
+            'ver_office'=> trim($post['ver_office']),
+            'Ip'=> trim($post['Ip']),
             'años_garantia' => trim($post['años_garantia']),
-            'proveedor' => trim($post['proveedor']),
+            'proveedor_id' => trim($post['proveedor_id']),
+            'num_doc_compra'=> trim($post['num_doc_compra']),
             'estado' => trim($post['estado']),
             'fecha_adquisicion' => trim($post['fecha_adquisicion']),
-            'id_personas' => trim($post['id_personas']),
             'id_departamento' => trim($post['departamento']),
+            'id_personas' => trim($post['id_personas']),
+            'id_locales' => trim($post['id_locales']),
 
         ]);
         return redirect()->to('bienes');
     }
 
-    /**
-     * Delete the designated resource object from the model.
-     *
-     * @param int|string|null $id
-     *
-     * @return ResponseInterface
-     */
+   
     public function desactivar()
     {
         // Obtener datos del formulario

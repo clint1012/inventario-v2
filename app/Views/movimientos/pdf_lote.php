@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Cargo por Lote</title>
+    <title>Reporte de Movimiento</title>
     <style>
         table {
             width: 100%;
@@ -43,7 +43,7 @@
 
         .info p {
             margin: 4px 0;
-            font-size: 13px;
+            font-size: 16px;
         }
 
         .seccion {
@@ -119,12 +119,14 @@
 
 <body>
 
+    <img src="<?= base_url('img/logo_principal.png') ?>" width="200">
+
     <table class="header">
         <tr>
+
             <td style="text-align: center;">
-                <h1>TRIBUNAL CONSTITUCIONAL</h1>
-                <h2>REPORTE DE CARGO POR LOTE</h2>
-                
+                <h1>REPORTE DE MOVIMIENTO</h1>
+                <h2>OFICINA DE TECNOLOGIA DE INFORMACION</h2>
             </td>
         </tr>
     </table>
@@ -144,24 +146,62 @@
     $asignados = array_filter($movimientos, fn($m) => in_array($m['tipo_movimiento'], ['asignacion', 'prestamo']));
     $retirados = array_filter($movimientos, fn($m) => $m['tipo_movimiento'] === 'retiro');
 
-    // Usuario destino
-    $usuarioDestino = null;
-    $departamentoDestino = null;
-    $localDestino = null;
-    foreach ($asignados as $m) {
-        $usuarioDestino = trim(($m['nombre'] ?? '') . ' ' . ($m['ape_paterno'] ?? '') . ' ' . ($m['ape_materno'] ?? ''));
-        $departamentoDestino = $m['departamento'] ?? '-';
-        $localDestino = $m['local'] ?? '-';
-        break;
+    // Usuario, área y local según tipo de movimiento del lote
+    $usuarioDestino = '-';
+    $departamentoDestino = '-';
+    $localDestino = '-';
+
+    if ($tipoLote === 'Retiro') {
+
+        // En RETIRO → se usa PERSONA ANTERIOR
+        foreach ($movimientos as $m) {
+            if ($m['tipo_movimiento'] === 'retiro') {
+
+                // Datos del usuario anterior
+                $usuarioDestino = trim(
+                    ($m['nombre_anterior'] ?? '') . ' ' .
+                    ($m['apep_anterior'] ?? '') . ' ' .
+                    ($m['apem_anterior'] ?? '')
+                );
+
+                // Departamento anterior
+                $departamentoDestino = $m['departamento_anterior'] ?? '-';
+
+                // Local anterior
+                $localDestino = $m['local_anterior'] ?? '-';
+
+                break;
+            }
+        }
+
+    } else {
+
+        // Asignación o préstamo → usuario destino normal
+        foreach ($asignados as $m) {
+            $usuarioDestino = trim(
+                ($m['nombre'] ?? '') . ' ' .
+                ($m['ape_paterno'] ?? '') . ' ' .
+                ($m['ape_materno'] ?? '')
+            );
+            $departamentoDestino = $m['departamento'] ?? '-';
+            $localDestino = $m['local'] ?? '-';
+            break;
+        }
+
+        // Si no hubiese datos, tomar el primero
+        if ($usuarioDestino === '-') {
+            $p = $movimientos[0];
+            $usuarioDestino = trim(
+                ($p['nombre'] ?? '') . ' ' .
+                ($p['ape_paterno'] ?? '') . ' ' .
+                ($p['ape_materno'] ?? '')
+            );
+            $departamentoDestino = $p['departamento'] ?? '-';
+            $localDestino = $p['local'] ?? '-';
+        }
     }
 
-    // Si no hay asignación, usar primer movimiento
-    if (empty($usuarioDestino)) {
-        $p = $movimientos[0];
-        $usuarioDestino = trim(($p['nombre'] ?? '') . ' ' . ($p['ape_paterno'] ?? '') . ' ' . ($p['ape_materno'] ?? ''));
-        $departamentoDestino = $p['departamento'] ?? '-';
-        $localDestino = $p['local'] ?? '-';
-    }
+
 
     // Observaciones únicas con saltos de línea
     $observacionesArr = [];
@@ -176,11 +216,11 @@
     // Fecha
     $fecha = date('d/m/Y H:i:s', strtotime($movimientos[0]['fecha_movimiento']));
     ?>
-
+    <br>
     <div class="info">
-        <p><strong>Tipo de Lote:</strong> <?= $tipoLote ?></p>
-        <p><strong>Usuario destino:</strong> <?= $usuarioDestino ?: '-' ?></p>
-        <p><strong>Departamento:</strong> <?= $departamentoDestino ?></p>
+        <p><strong>Tipo de Movimiento:</strong> <?= $tipoLote ?></p>
+        <p><strong>Usuario:</strong> <?= $usuarioDestino ?: '-' ?></p>
+        <p><strong>Area:</strong> <?= $departamentoDestino ?></p>
         <p><strong>Local:</strong> <?= $localDestino ?></p>
         <p><strong>Fecha:</strong> <?= $fecha ?></p>
     </div>
@@ -213,6 +253,8 @@
             </table>
         </div>
     <?php endif; ?>
+
+    <br>
 
     <?php if (!empty($retirados)): ?>
         <div class="seccion">
@@ -250,14 +292,26 @@
             <td>
                 <div class="linea"></div>
                 <p><strong><?= $usuarioDestino ?></strong></p>
+                <p style="text-align:left; padding-left:125px;">DNI:</p>
+                <p><?= $departamentoDestino ?></p>
+
             </td>
             <td>
                 <div class="linea"></div>
-                <p><br><strong><?= $movimientos[0]['usuario_registro'] ?? '________________' ?></strong></p>
+                <p><strong>BORIS HORNA L.</strong></p>
+                <p>Especialista Técnico</p>
+                <p>Oficina de Tecnología de la Información</p>
             </td>
         </tr>
     </table>
+    <br>
 
+    <p>(*) El usuario acepta haber leído y se sujeta a las disposiciones contenidas en la DIRECTIVA Nº 002 -2016-DIGA/TC
+        <br>
+        "Normas que regulan el Uso de las Tecnologías de Información y Comunicaciones en el Tribunal Constitucional".
+    </p>
+
+    
 </body>
 
 </html>

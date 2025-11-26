@@ -85,6 +85,11 @@
     </div>
 
     <div class="col-md-6">
+        <label for="num_doc_compra" class="form-label">Numero documento de compra</label>
+        <input type="text" class="form-control" id="num_doc_compra" name="num_doc_compra" value="<?= $bien['num_doc_compra'] ?>" readonly>
+    </div>
+
+    <div class="col-md-6">
         <label for="años_garantia" class="form-label">Años de garantia</label>
         <input type="text" class="form-control" id="años_garantia" name="años_garantia" value="<?= $bien['años_garantia'] ?>" readonly>
     </div>
@@ -96,8 +101,10 @@
 
     <div class="col-md-6">
         <label for="proveedor" class="form-label">Proveedor</label>
-        <input type="text" class="form-control" id="proveedor" name="proveedor" value="<?= $bien['proveedor'] ?>" readonly>
+    <input type="text" class="form-control" id="proveedor" 
+        name="proveedor" value="<?= $bien['proveedor_nombre'] ?>" readonly>
     </div>
+
 
     <div class="col-md-6">
         <label for="departamento" class="form-label">Departamento</label>

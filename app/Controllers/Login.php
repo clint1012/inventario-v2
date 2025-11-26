@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\UsuariosModel;
+use App\Models\UsuariosRolesModel;
+use App\Models\RolesPermisosModel;
 use CodeIgniter\Controller;
 
 class Login extends Controller
@@ -41,13 +43,29 @@ class Login extends Controller
             return redirect()->back()->with('error', 'Contraseña incorrecta')->withInput();
         }
 
-        // Crear sesión
+        // ==============================
+        // CARGAR ROLES Y PERMISOS
+        // ==============================
+        $usuariosRolesModel = new UsuariosRolesModel();
+        $rolesPermisosModel = new RolesPermisosModel();
+
+        // Obtener roles del usuario
+        $roles = $usuariosRolesModel->getRolesByUsuario($user['id']);
+        $rolesIds = array_column($roles, 'id');
+
+        // Obtener permisos (solo claves)
+        $permisos = $rolesPermisosModel->getPermisosByRoles($rolesIds);
+        $permisosClaves = array_column($permisos, 'clave');
+
+        // Guardar sesión completa
         $sessionData = [
             'usuario_id' => $user['id'],
-            'usuario'    => $user['usuario'],
-            'nombre'     => $user['nombre'] ?? '',
-            'correo'     => $user['correo'] ?? '',
-            'logged_in'  => true,
+            'usuario' => $user['usuario'],
+            'nombre' => $user['nombre'] ?? '',
+            'correo' => $user['correo'] ?? '',
+            'logged_in' => true,
+            'roles' => $rolesIds,
+            'permisos' => $permisosClaves,
         ];
 
         session()->set($sessionData);
