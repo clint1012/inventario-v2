@@ -10,15 +10,17 @@
             <tr>
                 <th>Usuario</th>
                 <th>Fecha</th>
-                <th>Departamento</th>
-                <th>Local</th>
+
                 <th>Tipo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             <?php foreach ($usuarios as $mov): ?>
-                <tr data-lote="<?= $mov['lote'] ?>">
+                <tr data-lote="<?= $mov['lote'] ?>"
+                    data-departamento="<?= $mov['id_departamentos'] ?? $mov['id_departamento'] ?? '' ?>"
+                    data-local="<?= $mov['id_locales'] ?? $mov['id_local'] ?? '' ?>">
+
 
                     <!-- USUARIO -->
                     <td>
@@ -48,15 +50,9 @@
                     <!-- FECHA -->
                     <td><?= date('d-m-Y H:i', strtotime($mov['fecha_movimiento'])) ?></td>
 
-                    <!-- DEPARTAMENTO -->
-                    <td>
-                        <?= $mov['departamento_anterior'] ?>
-                    </td>
 
-                    <!-- LOCAL -->
-                    <td>
-                        <?= $mov['local_anterior'] ?>
-                    </td>
+
+
 
                     <!-- TIPO DE MOVIMIENTO -->
                     <td><?= ucfirst(strtolower($mov['tipo_movimiento'])) ?></td>
@@ -70,6 +66,12 @@
                             data-lote="<?= $mov['lote'] ?>">
                             Anular
                         </button>
+
+                        <?php if (!empty($mov['tipo_movimiento']) && $mov['tipo_movimiento'] === 'prestamo'): ?>
+                            <button class="btn btn-sm btn-success btnDevolver" data-lote="<?= $mov['lote'] ?>">
+                                Devolver
+                            </button>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -170,6 +172,46 @@
             });
         });
 
+    });
+    $(document).on('click', '.btnDevolver', function (e) {
+        e.preventDefault();
+        const $btn = $(this);
+        const lote = $btn.data('lote');
+        if (!lote) return alert('Lote no especificado.');
+
+        if (!confirm('¿Confirmas devolver este préstamo y regresar los bienes al área OTI?')) return;
+
+        const url = "<?= base_url('movimientos/devolverPrestamo') ?>/" + lote;
+
+        $.post(url, {}, function (resp) {
+            if (resp && resp.status === 'success') {
+                // Actualizar la fila: quitar nombre de usuario (col 0), actualizar departamento/local y tipo
+                const $tr = $('tr[data-lote="' + lote + '"]');
+                if ($tr.length) {
+                    // USUARIO -> vacío
+                    $tr.find('td').eq(0).text('-');
+
+                    // DEPARTAMENTO -> nombre OTI devuelto por backend
+                    if (resp.oti_departamento_nombre) {
+                        // asumiendo que departamento está en columna X (ajusta índice si es distinto)
+                        // en tu vista, DEPARTAMENTO y LOCAL estaban después de FECHA; ajustar según estructura real
+                        // ejemplo asume: 0=user,1=fecha,2=departamento,3=local,4=tipo,5=acciones
+                        $tr.find('td').eq(2).text(resp.oti_departamento_nombre);
+                        $tr.find('td').eq(3).text(resp.oti_local_nombre || '');
+                        $tr.find('td').eq(4).text('Devolución');
+                    }
+
+                    // quitar/ocultar botones Devolver / Anular si es necesario
+                    $tr.find('.btnDevolver').remove();
+                }
+
+                alert(resp.message || 'Devolución realizada.');
+            } else {
+                alert(resp.message || 'Error al devolver el préstamo.');
+            }
+        }, 'json').fail(function () {
+            alert('Error en el servidor.');
+        });
     });
 </script>
 <?= $this->endSection() ?>

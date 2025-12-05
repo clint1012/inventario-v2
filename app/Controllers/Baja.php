@@ -11,7 +11,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Baja extends BaseController
 {
-    
+
     public function index()
     {
         $bienesModel = new BienesModel();
@@ -30,7 +30,7 @@ class Baja extends BaseController
         return view('baja/index', $data); // Vista dentro de la carpeta "baja"
     }
 
-    
+
     public function show($id = null)
     {
         if ($id === null) {
@@ -50,13 +50,13 @@ class Baja extends BaseController
         return view('bienes/ver', $data);
     }
 
-   
+
     public function new()
     {
         //
     }
 
-   
+
     public function create()
     {
         //
@@ -67,13 +67,13 @@ class Baja extends BaseController
         //
     }
 
-    
+
     public function update($id = null)
     {
         //
     }
 
-   
+
     public function delete()
     {
         //
@@ -154,15 +154,21 @@ class Baja extends BaseController
         $sheet->setCellValue('F1', 'Estado');
         $sheet->setCellValue('G1', 'Fecha de Compra');
         $sheet->setCellValue('H1', 'Estado Garantía');
-        $sheet->setCellValue('I1', 'Proveedor');
+        $sheet->setCellValue('I1', 'Proveedor_id');
         $sheet->setCellValue('J1', 'Ultima Modificacion');
         $sheet->setCellValue('K1', 'Motivo de Baja');
         $sheet->setCellValue('L1', 'Foto Frontal');
         $sheet->setCellValue('M1', 'Foto Lateral');
 
-        // Ancho de columnas J y K para imágenes
-        $sheet->getColumnDimension('L')->setWidth(20);
-        $sheet->getColumnDimension('M')->setWidth(20);
+        // Ancho de columnas para imágenes
+        $sheet->getColumnDimension('L')->setWidth(30);
+        $sheet->getColumnDimension('M')->setWidth(30);
+
+        // Ancho máximo para Motivo de Baja y ajustar texto (wrap)
+        $sheet->getColumnDimension('K')->setWidth(50); // ajuste el valor según prefiera
+        $sheet->getStyle('K')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('K')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+
         $sheet->getRowDimension(1)->setRowHeight(30);
 
         $fila = 2;
@@ -176,15 +182,19 @@ class Baja extends BaseController
             $sheet->setCellValue('F' . $fila, $bien['estado']);
             $sheet->setCellValue('G' . $fila, $bien['fecha_adquisicion']);
             $sheet->setCellValue('H' . $fila, $bien['estado_garantia']);
-            $sheet->setCellValue('I' . $fila, $bien['proveedor']);
+            $sheet->setCellValue('I' . $fila, $bien['proveedor_id']);
             $sheet->setCellValue('J' . $fila, $bien['updated_at']);
             $sheet->setCellValue('K' . $fila, $bien['motivo_baja']);
+
+            // Asegurar que la celda de motivo use wrap (por si necesita)
+            $sheet->getStyle('K' . $fila)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('K' . $fila)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
 
             // Insertar imagen frontal
             if (!empty($bien['foto_frente']) && file_exists(FCPATH . $bien['foto_frente'])) {
                 $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                 $drawing->setPath(FCPATH . $bien['foto_frente']);
-                $drawing->setHeight(60); // Puedes ajustar tamaño
+                $drawing->setHeight(60);
                 $drawing->setCoordinates('L' . $fila);
                 $drawing->setWorksheet($sheet);
             }
@@ -193,12 +203,12 @@ class Baja extends BaseController
             if (!empty($bien['foto_lateral']) && file_exists(FCPATH . $bien['foto_lateral'])) {
                 $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
                 $drawing->setPath(FCPATH . $bien['foto_lateral']);
-                $drawing->setHeight(60); // Puedes ajustar tamaño
+                $drawing->setHeight(60);
                 $drawing->setCoordinates('M' . $fila);
                 $drawing->setWorksheet($sheet);
             }
 
-            // Ajustar altura de la fila para ver bien las imágenes
+            // Ajustar altura de la fila para ver bien las imágenes / texto
             $sheet->getRowDimension($fila)->setRowHeight(65);
 
             $fila++;

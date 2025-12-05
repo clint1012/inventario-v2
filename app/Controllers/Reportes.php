@@ -8,7 +8,7 @@ use Dompdf\Options;
 use App\Models\BienesModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class Inventario extends BaseController
+class Reportes extends BaseController
 {
     protected $bienesModel;
 

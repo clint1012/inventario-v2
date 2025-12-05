@@ -118,7 +118,8 @@
                     data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
 
-                        <a class="collapse-item" href="<?= base_url("index.php/bienes") ?>">Inventario</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/inventario") ?>">Inventario</a>
+                        <a class="collapse-item" href="<?= base_url("index.php/inventario/listado") ?>">Listado de Inventarios</a>
                         <a class="collapse-item" href="<?= base_url('movimientos') ?>">Movimientos</a>
                         <a class="collapse-item" href="<?= base_url("index.php/baja") ?>">Baja</a>
                         <a class="collapse-item" href="<?= base_url("index.php/ip") ?>"><i
@@ -173,7 +174,7 @@
                     </button>
 
                     <!-- Topbar Search -->
-                    <form
+                    <!-- <form
                         class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
                             <input type="text" class="form-control bg-light border-0 small" placeholder="Buscar"
@@ -184,7 +185,7 @@
                                 </button>
                             </div>
                         </div>
-                    </form>
+                    </form> -->
 
                     <!-- Topbar Navbar -->
                     <ul class="navbar-nav ml-auto">
@@ -222,7 +223,7 @@
                                     style="display:none;">0</span>
                             </a>
                             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="notificacionesBtn">
-                                <h6 class="dropdown-header">Licencias por vencer</h6>
+                                <h6 class="dropdown-header">Notificaciones</h6>
                                 <div id="listaNotificaciones" class="px-3">
                                     <small>No hay alertas</small>
                                 </div>
@@ -756,48 +757,7 @@
     <!-- ============================== -->
     <!--  Script de notificaciones (campanita) -->
     <!-- ============================== -->
-    <script>
-        function cargarNotificaciones() {
-            $.get("<?= base_url('licencias/proximas-vencer'); ?>", function (response) {
-
-                const total = response.cantidad;
-                const lista = response.licencias;
-
-                // CONTADOR ROJO
-                if (total > 0) {
-                    $('#contadorNotificaciones')
-                        .text(total)
-                        .show();
-                } else {
-                    $('#contadorNotificaciones').hide();
-                }
-
-                // LISTA DETALLADA
-                let html = "";
-
-                if (total === 0) {
-                    html = "<small>No hay licencias próximas a vencer</small>";
-                } else {
-                    lista.forEach(item => {
-                        html += `
-                    <div class="alert alert-warning p-2 mb-2">
-                        <b>${item.nombre_software}</b><br>
-                        Expira: ${item.fecha_expiracion}
-                    </div>
-                `;
-                    });
-                }
-
-                $("#listaNotificaciones").html(html);
-            });
-        }
-
-        // Cargar al iniciar
-        cargarNotificaciones();
-
-        // Actualizar cada 60 segundos
-        setInterval(cargarNotificaciones, 60000);
-    </script>
+   
 
 
 
@@ -927,6 +887,55 @@
             }).trigger('change');
         });
     </script>
+
+    <script>
+    function cargarNotificaciones() {
+        const licenciasReq = $.get("<?= base_url('licencias/proximas-vencer'); ?>");
+        const prestamosReq = $.get("<?= base_url('movimientos/prestamos-por-vencer'); ?>");
+
+        $.when(licenciasReq, prestamosReq).done(function (licenciasResp, prestamosResp) {
+            const licencias = licenciasResp[0] || { cantidad: 0, licencias: [] };
+            const prestamos = prestamosResp[0] || { cantidad: 0, prestamos: [] };
+
+            const total = (licencias.cantidad || 0) + (prestamos.cantidad || 0);
+
+            if (total > 0) {
+                $('#contadorNotificaciones').text(total).show();
+            } else {
+                $('#contadorNotificaciones').hide();
+            }
+
+            let html = "";
+
+            if (total === 0) {
+                html = "<small>No hay alertas</small>";
+            } else {
+                if ((licencias.cantidad || 0) > 0) {
+                    licencias.licencias.forEach(item => {
+                        html += `<div class="alert alert-warning p-2 mb-2"><b>${item.nombre_software}</b><br>Expira: ${item.fecha_expiracion}</div>`;
+                    });
+                }
+                if ((prestamos.cantidad || 0) > 0) {
+                    prestamos.prestamos.forEach(p => {
+                        html += `<div class="alert alert-info p-2 mb-2"><b>Préstamo - Lote ${p.lote}</b><br>Usuario: ${p.usuario}<br>Vence: ${p.fecha_limite}</div>`;
+                    });
+                }
+                html += `<div class="dropdown-divider"></div><a class="dropdown-item text-center" href="<?= base_url('movimientos') ?>">Ver movimientos</a>`;
+            }
+
+            $("#listaNotificaciones").html(html);
+        }).fail(function () {
+            $("#listaNotificaciones").html("<small>No se pudieron cargar las notificaciones</small>");
+            $('#contadorNotificaciones').hide();
+        });
+    }
+
+    // Ejecutar al iniciar y periódicamente
+    $(function () {
+        cargarNotificaciones();
+        setInterval(cargarNotificaciones, 60000);
+    });
+</script>
 
     <?= $this->renderSection('scripts_datatable_ip') ?>
     <?= $this->renderSection('scripts') ?>

@@ -135,7 +135,8 @@
 
     <div class="col-md-6">
         <label for="espacio_disco" class="form-label"> Espacio de disco</label>
-        <input type="text" class="form-control" id="espacio_disco" name="espacio_disco" value="<?= $bien['espacio_disco'] ?>">
+        <input type="text" class="form-control" id="espacio_disco" name="espacio_disco"
+            value="<?= $bien['espacio_disco'] ?>">
     </div>
 
     <!--Fin input espacio disco-->
@@ -172,7 +173,8 @@
         <label for="ver_office" class="form-label">Version de Office</label>
         <select name="ver_office" id="ver_office" class="form-select form-control">
             <option value="">Seleccionar</option>
-            <option value="Microsoft 365" <?= $bien['ver_office'] === 'Microsoft 365' ? 'selected' : '' ?>>Microsoft 365</option>
+            <option value="Microsoft 365" <?= $bien['ver_office'] === 'Microsoft 365' ? 'selected' : '' ?>>Microsoft 365
+            </option>
             <option value="Microsoft Office Hogar y Empresas 2016" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2016' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2016</option>
             <option value="Microsoft Office Hogar y Empresas 2019" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2019' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2019</option>
             <option value="Microsoft Office Hogar y Empresas 2021" <?= $bien['ver_office'] === 'Microsoft Office Hogar y Empresas 2021' ? 'selected' : '' ?>>Microsoft Office Hogar y Empresas 2021</option>
@@ -182,7 +184,7 @@
             <option value="Microsoft Office Standard 2007" <?= $bien['ver_office'] === 'Microsoft Office Standard 2007' ? 'selected' : '' ?>>Microsoft Office Standard 2007</option>
             <option value="NO APLICA" <?= $bien['ver_office'] === 'NO APLICA' ? 'selected' : '' ?>>NO APLICA</option>
         </select>
-    </div>    
+    </div>
 
     <!--Fin select Office-->
 
@@ -259,12 +261,22 @@
             <?php endforeach; ?>
         </select>
     </div>
-    
+
     <br><br><br>
 
     <div class="col-12" style="padding-top: 10px;">
-        <a href="#" onclick="abrirModalMantenimiento(<?= $bien['id'] ?>)" class="btn btn-secondary"> Solicitar
-            mantenimiento</a>
+        <?php if ($bien['estado'] === 'mantenimiento'): ?>
+            <form action="<?= base_url('bienes/recuperar-mantenimiento') ?>" method="post" class="d-inline"
+                onsubmit="return confirmarRecuperacion()">
+                <?= csrf_field() ?>
+                <input type="hidden" name="bien_id" value="<?= $bien['id'] ?>">
+                <button type="submit" class="btn btn-success">Recuperar</button>
+            </form>
+        <?php else: ?>
+            <button type="button" onclick="abrirModalMantenimiento(<?= $bien['id'] ?>)" class="btn btn-secondary">
+                Solicitar mantenimiento
+            </button>
+        <?php endif; ?>
         <a href="<?= base_url('bienes') ?>" class="btn btn-secondary">Regresar</a>
         <button type="submit" class="btn btn-primary">Guardar</button>
     </div>
@@ -283,7 +295,8 @@
                 </button>
             </div>
             <form id="formMantenimiento" action="<?= base_url('bienes/getMantenimiento') ?>" method="post"
-                enctype="multipart/form-data">
+                enctype="multipart/form-data" onsubmit="return confirmarMantenimiento()">
+                <?= csrf_field() ?>
                 <div class="modal-body">
                     <input type="hidden" id="bien_id" name="bien_id">
                     <div class="form-group">
@@ -308,7 +321,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"> Cancelar</button>
-                    <button type="submit" class="btn btn-danger">Confirmar Baja</button>
+                    <button type="submit" class="btn btn-primary">Enviar a mantenimiento</button>
                 </div>
             </form>
         </div>
@@ -368,6 +381,14 @@
         document.getElementById('bien_id').value = id; // Pasar el ID al modal 
         $('#modalMantenimiento').modal('show'); // Mostrar el modal 
     } 
+
+    function confirmarMantenimiento() {
+        return confirm('¿Deseas enviar este equipo a mantenimiento?');
+    }
+
+    function confirmarRecuperacion() {
+        return confirm('¿Deseas marcar este equipo como recuperado?');
+    }
 </script>
 
 <?= $this->endSection(); ?>

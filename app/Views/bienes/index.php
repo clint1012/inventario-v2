@@ -18,6 +18,7 @@
         Agregar
     </a>
 
+    <button id="btnExportarFiltrado" class="btn btn-success mb-2">Exportar Excel</button>
     <!-- <button id="btnGenerarPDF" class="btn btn-danger">
         <i class="fas fa-file-pdf"></i> Generar PDF
     </button> -->
@@ -111,7 +112,8 @@
                     <a href="<?= base_url('bienes/' . $b['id'] . '/edit') ?>"
                         class="btn btn-warning btn-sm me-2 mb-1">Editar</a>
                     <a href="<?= base_url('bienes/' . $b['id']) ?>" class="btn btn-success btn-sm me-2">Ver</a>
-                    <a href="#" onclick="abrirModalBaja(<?= $b['id'] ?>)" class="btn btn-danger btn-sm me-2"> Solicitar baja</a>
+                    <a href="#" onclick="abrirModalBaja(<?= $b['id'] ?>)" class="btn btn-danger btn-sm me-2"> Solicitar
+                        baja</a>
                 </td>
             </tr>
         <?php endforeach; ?>
@@ -170,13 +172,91 @@
             window.location.href = "<?= base_url('bienes/desactivar/') ?>" + id;
 
         }
-    } 
-    
+    }
+
     function abrirModalBaja(id) {
         document.getElementById('bien_id').value = id; // Pasar el ID al modal 
         $('#modalBaja').modal('show'); // Mostrar el modal 
     } 
 </script>
 
+
+<?= $this->endSection(); ?>
+
+<?= $this->section('scripts') ?>
+
+<script>
+
+    $(function () {
+
+        var table = $('#bienesTable').DataTable({
+            retrieve: true
+        });
+
+        $('#btnExportarFiltrado').on('click', function () {
+            let params = {};
+
+            // 1. BÚSQUEDA GLOBAL
+            params.search = table.search() || '';
+
+            // 2. FILTROS POR COLUMNA - MAPEO CORRECTO
+            // Índices: 0=ID, 1=Código, 2=Descripción, 3=Marca, 4=Modelo, 5=Serie,
+            //          6=Local, 7=Departamento, 8=Estado, 9=Fecha, 10=Garantía, 11=Usuario, 12=Opciones
+
+            const columnMap = {
+                1: 'cod_patrimonial',
+                2: 'descripcion',
+                3: 'marca',
+                4: 'modelo',
+                5: 'serie',
+                6: 'local',
+                7: 'departamento',
+                8: 'estado',
+                9: 'fecha_adquisicion',
+                10: 'estado_garantia',
+                11: 'usuario'
+            };
+
+            $('#bienesTable thead tr:eq(1) th').each(function (idx) {
+                // Ignorar ID (0) y Opciones (12)
+                if (idx === 0 || idx === 12) return;
+
+                let input = $(this).find('input');
+                let select = $(this).find('select');
+                let value = '';
+
+                if (input.length) value = input.val();
+                if (select.length) value = select.val();
+
+                if (value && value !== '') {
+                    let colName = columnMap[idx] || 'col_' + idx;
+                    params[colName] = value;
+                }
+            });
+
+            // 3. FILTROS EXTRA (aunque no veo estos elementos en tu HTML, los dejo por compatibilidad)
+            let departamento = $('#filterDepartamento').val();
+            let estado = $('#filterEstado').val();
+            let desde = $('#filterDesde').val();
+            let hasta = $('#filterHasta').val();
+
+            if (departamento) params.departamento = departamento;
+            if (estado) params.estado = estado;
+            if (desde) params.desde = desde;
+            if (hasta) params.hasta = hasta;
+
+            // 4. DEBUG: Ver parámetros en consola
+            console.log('Params enviados:', params);
+
+            // 5. Generar URL y descargar
+            let qs = $.param(params);
+            let url = "<?= base_url('bienes/exportarFiltrado') ?>?" + qs;
+
+            console.log('URL:', url);
+            window.location = url;
+        });
+
+    });
+</script>
 
 <?= $this->endSection(); ?>

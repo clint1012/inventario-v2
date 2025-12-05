@@ -191,4 +191,98 @@ class Personas extends BaseController
     {
         //
     }
+
+    public function desactivar($id = null)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Solicitud inválida.']);
+        }
+
+        if (empty($id)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID no especificado.']);
+        }
+
+        $motivo = trim($this->request->getPost('motivo_cese') ?? '');
+        if ($motivo === '') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Ingrese un motivo de cese.']);
+        }
+
+        $personasModel = new \App\Models\PersonasModel();
+        $db = \Config\Database::connect();
+        $fields = $db->getFieldNames('personas');
+
+        $data = [
+            'estado' => 'inactivo'
+        ];
+
+        if (in_array('motivo_cese', $fields)) {
+            $data['motivo_cese'] = $motivo;
+        } elseif (in_array('observaciones', $fields)) {
+            $current = $personasModel->find($id);
+            $obs = trim($current['observaciones'] ?? '');
+            $data['observaciones'] = ($obs === '' ? '' : $obs . "\n") . 'Motivo cese: ' . $motivo;
+        }
+
+        if (in_array('fecha_cese', $fields)) {
+            $data['fecha_cese'] = date('Y-m-d H:i:s');
+        }
+
+        // Evitar llamar update con array vacío
+        if (empty($data)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No hay datos para actualizar.']);
+        }
+
+        try {
+            $personasModel->update($id, $data);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Error al actualizar: ' . $e->getMessage()]);
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Usuario desactivado correctamente.', 'id' => $id]);
+    }
+
+
+    public function recuperar($id = null)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['status' => 'error', 'message' => 'Solicitud inválida.']);
+        }
+
+        if (empty($id)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID no especificado.']);
+        }
+
+        $personasModel = new \App\Models\PersonasModel();
+        $person = $personasModel->find($id);
+
+        if (!$person) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Usuario no encontrado.']);
+        }
+
+        // Preparar datos a actualizar
+        $data = ['estado' => 'activo'];
+
+        // Solo intentar resetear si las columnas existen
+        $db = \Config\Database::connect();
+        $fields = $db->getFieldNames('personas');
+        if (in_array('motivo_cese', $fields)) {
+            $data['motivo_cese'] = null;
+        }
+        if (in_array('fecha_cese', $fields)) {
+            $data['fecha_cese'] = null;
+        }
+
+        // Evitar update vacío
+        if (empty($data)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No hay datos para actualizar.']);
+        }
+
+        try {
+            $personasModel->update($id, $data);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Error al actualizar: ' . $e->getMessage()]);
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'message' => 'Usuario recuperado y motivo/fecha de cese reseteados.', 'id' => $id]);
+    }
 }

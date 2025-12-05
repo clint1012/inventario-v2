@@ -223,6 +223,20 @@
         <p><strong>Area:</strong> <?= $departamentoDestino ?></p>
         <p><strong>Local:</strong> <?= $localDestino ?></p>
         <p><strong>Fecha:</strong> <?= $fecha ?></p>
+
+        <?php
+        // Mostrar fecha límite de préstamo si algún movimiento del lote es de tipo 'prestamo'
+        $fechaLimite = null;
+        foreach ($movimientos as $m) {
+            if (!empty($m['tipo_movimiento']) && $m['tipo_movimiento'] === 'prestamo' && !empty($m['fecha_limite_prestamo'])) {
+                $fechaLimite = $m['fecha_limite_prestamo'];
+                break;
+            }
+        }
+        ?>
+        <?php if (!empty($fechaLimite)): ?>
+            <p><strong>Fecha límite de préstamo:</strong> <?= date('d/m/Y', strtotime($fechaLimite)) ?></p>
+        <?php endif; ?>
     </div>
 
 
@@ -311,7 +325,7 @@
         "Normas que regulan el Uso de las Tecnologías de Información y Comunicaciones en el Tribunal Constitucional".
     </p>
 
-    
+
 </body>
 
 </html>

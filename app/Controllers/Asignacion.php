@@ -66,10 +66,6 @@ class Asignacion extends BaseController
 
         } elseif ($tipo === 'prestamo') {
             $bienes = $this->request->getPost('bienes_prestar');
-            $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
-
-        } elseif ($tipo === 'prestamo') {
-            $bienes = $this->request->getPost('bienes_prestar');
             $fechaLimite = $this->request->getPost('fecha_limite'); // ✅ nuevo
             $this->procesarPrestamo($bienes, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote, $fechaLimite);
 
@@ -109,7 +105,7 @@ class Asignacion extends BaseController
                 'observaciones' => $observaciones,
                 'lote' => $lote,
                 'id_persona_anterior' => $dueñoAnterior, // 📌 historial
-                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_departamento_anterior' => $bien['id_departamento'], // ← corregido: usar id_departamentos del bien
                 'id_local_anterior' => $bien['id_locales'],
             ]);
 
@@ -144,7 +140,7 @@ class Asignacion extends BaseController
                 'lote' => $lote,
                 'id_persona_anterior' => $dueñoAnterior, // 📌 historial
                 'fecha_limite_prestamo' => $fechaLimite,
-                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_departamento_anterior' => $bien['id_departamento'], // ← corregido
                 'id_local_anterior' => $bien['id_locales'],
             ]);
 
@@ -177,14 +173,14 @@ class Asignacion extends BaseController
                 'observaciones' => $observaciones,
                 'lote' => $lote,
                 'id_persona_anterior' => $dueñoAnterior,
-                'id_departamento_anterior' => $bien['id_departamentos'],
+                'id_departamento_anterior' => $bien['id_departamento'], // ← corregido
                 'id_local_anterior' => $bien['id_locales'],
             ]);
 
             $this->bienesModel->update($idBien, [
                 'estado' => 'activo',
                 'id_personas' => 254,
-                'id_departamentos' => 1,
+                'id_departamentos' => 1, // ← corregido: usar 'id_departamentos'
                 'id_locales' => 5,
             ]);
         }
@@ -238,58 +234,53 @@ class Asignacion extends BaseController
 
         if (!$lote) {
             if ($this->request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no válido.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no especificado.']);
             }
-            return redirect()->to('movimientos')->with('error', 'Lote no válido.');
+            return redirect()->to('movimientos')->with('error', 'Lote no especificado.');
         }
 
-        // Verificar si existe el lote
         $movimiento = $movModel->where('lote', $lote)->first();
         if (!$movimiento) {
             if ($this->request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'error', 'message' => 'No se encontró ningún movimiento con ese lote.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no encontrado.']);
             }
-            return redirect()->to('movimientos')->with('error', 'No se encontró ningún movimiento con ese lote.');
+            return redirect()->to('movimientos')->with('error', 'Lote no encontrado.');
         }
 
-        // Verificar si ya fue anulado
-        if ($movimiento['anulado'] == 1) {
+        if ((int) $movimiento['anulado'] === 1) {
             if ($this->request->isAJAX()) {
-                return $this->response->setJSON(['status' => 'info', 'message' => 'Este lote ya fue anulado anteriormente.']);
+                return $this->response->setJSON(['status' => 'error', 'message' => 'El lote ya está anulado.']);
             }
-            return redirect()->to('movimientos')->with('info', 'Este lote ya fue anulado anteriormente.');
+            return redirect()->to('movimientos')->with('warning', 'El lote ya está anulado.');
         }
 
-        // Capturar motivo desde POST (si se usa formulario)
         $motivo = $this->request->getPost('motivo_anulacion') ?? 'Anulación manual';
 
-        // Anular todos los movimientos del mismo lote
+        // Marcar lote como anulado y guardar motivo + fecha
         $movModel->where('lote', $lote)->set([
+            'motivo_anulacion' => $motivo,
             'anulado' => 1,
-            'motivo_anulacion' => $motivo
+            'fecha_anulacion' => date('Y-m-d H:i:s')
         ])->update();
 
-        // Liberar los bienes involucrados
+        // Liberar bienes involucrados (ejemplo: poner id_personas=null, id_departamentos=null, id_locales=OTI o null según tu lógica)
         $bienesIds = $movModel->select('id_bienes')->where('lote', $lote)->findAll();
-
         foreach ($bienesIds as $b) {
-            $bienesModel->update($b['id_bienes'], [
-                'estado' => 'activo',
-                'id_personas' => 254,
-                'id_departamentos' => 1,
-                'id_locales' => 5
-            ]);
+            if (!empty($b['id_bienes'])) {
+                // Ajusta según tu lógica de "liberar" el bien (ej. id_personas = null, id_departamentos = OTI_ID, estado = 'libre', etc.)
+                $bienesModel->update($b['id_bienes'], [
+                    'id_personas' => null,
+                    // 'id_departamentos' => $otiId, // descomenta y ajusta si corresponde
+                    // 'id_locales' => $otiLocalId,
+                    'estado' => 'disponible'
+                ]);
+            }
         }
 
-        // Si es AJAX → devolver JSON
         if ($this->request->isAJAX()) {
-            return $this->response->setJSON([
-                'status' => 'ok',
-                'message' => 'El lote fue anulado correctamente.'
-            ]);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Lote anulado correctamente.']);
         }
 
-        // Si NO es AJAX → redirigir normalmente
         return redirect()->to('movimientos')->with('success', 'El lote fue anulado correctamente.');
     }
 
@@ -320,9 +311,10 @@ class Asignacion extends BaseController
     // 📌 PDF lote
     public function descargarCargoLote($lote)
     {
-        $movimientos = $this->asignacionModel
+        $builder = $this->asignacionModel
             ->select('
             movimientos.*,
+            movimientos.fecha_limite_prestamo,
             bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.modelo, bienes.serie,
             personas.nombre, personas.ape_paterno, personas.ape_materno,
             p2.nombre AS nombre_anterior, p2.ape_paterno AS apep_anterior, p2.ape_materno AS apem_anterior,
@@ -331,30 +323,37 @@ class Asignacion extends BaseController
             dep2.nombre AS departamento_anterior,
             loc2.nombre AS local_anterior
         ')
-            ->where('lote', $lote)
+            ->where('movimientos.lote', $lote)
             ->join('bienes', 'bienes.id = movimientos.id_bienes', 'left')
             ->join('personas', 'personas.id = movimientos.id_personas', 'left')
             ->join('personas AS p2', 'p2.id = movimientos.id_persona_anterior', 'left')
             ->join('departamentos', 'departamentos.id = movimientos.id_departamentos', 'left')
             ->join('locales', 'locales.id = movimientos.id_locales', 'left')
-
-            // 🔥 IMPORTANTE: JOINS DEL ANTERIOR
             ->join('departamentos AS dep2', 'dep2.id = movimientos.id_departamento_anterior', 'left')
-            ->join('locales AS loc2', 'loc2.id = movimientos.id_local_anterior', 'left')
+            ->join('locales AS loc2', 'loc2.id = movimientos.id_local_anterior', 'left');
 
-            ->findAll();
+        $movimientos = $builder->get()->getResultArray();
 
         if (!$movimientos) {
             return redirect()->to('/movimientos')
                 ->with('error', 'No se encontraron movimientos para este lote.');
         }
 
-        // Render normal
+        // Buscar la primera fecha_limite_prestamo entre los movimientos de tipo 'prestamo'
+        $fechaLimite = null;
+        foreach ($movimientos as $m) {
+            if (!empty($m['tipo_movimiento']) && $m['tipo_movimiento'] === 'prestamo' && !empty($m['fecha_limite_prestamo'])) {
+                $fechaLimite = $m['fecha_limite_prestamo'];
+                break;
+            }
+        }
+
+
         $html = view('movimientos/pdf_lote', [
-            'movimientos' => $movimientos
+            'movimientos' => $movimientos,
+            'fechaLimite' => $fechaLimite
         ]);
 
-        // Snappy
         $snappy = new \Knp\Snappy\Pdf('C:\ARCHIV~1\wkhtmltopdf\bin\wkhtmltopdf.exe');
 
         $snappy->setOption('encoding', 'UTF-8');
@@ -368,10 +367,6 @@ class Asignacion extends BaseController
             );
     }
 
-
-
-    // 📄 Generar Acta consolidada por usuario
-    // 📄 Generar Acta consolidada por usuario
 
     public function descargarActa($idPersona)
     {
@@ -462,6 +457,130 @@ class Asignacion extends BaseController
         $dompdf->render();
 
         $dompdf->stream("Acta_{$persona['nombre']}.pdf", ["Attachment" => false]);
+    }
+
+    public function prestamosPorVencer(int $dias = 7)
+    {
+        $model = $this->asignacionModel; // ya instanciado en __construct
+        $rows = $model->getPrestamosPorVencer($dias); // debe devolver lote, fecha_limite_prestamo, nombre, ape_paterno, ape_materno, total_bienes
+
+        $prestamos = array_map(function ($r) {
+            $usuario = trim(($r['nombre'] ?? '') . ' ' . ($r['ape_paterno'] ?? '') . ' ' . ($r['ape_materno'] ?? ''));
+            return [
+                'lote' => $r['lote'],
+                'fecha_limite' => date('d/m/Y', strtotime($r['fecha_limite_prestamo'])),
+                'usuario' => $usuario ?: 'Sin usuario',
+                'total_bienes' => (int) ($r['total_bienes'] ?? 0)
+            ];
+        }, $rows);
+
+        return $this->response->setJSON([
+            'cantidad' => count($prestamos),
+            'prestamos' => $prestamos
+        ]);
+    }
+
+
+    public function devolverPrestamo($lote = null)
+    {
+        // Requiere autenticación (ruta ya tiene filter 'auth')
+        if (!$lote) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no especificado.']);
+        }
+
+        // Buscar préstamos activos del lote
+        $prestamos = $this->asignacionModel
+            ->where('lote', $lote)
+            ->where('tipo_movimiento', 'prestamo')
+            ->where('anulado', 0)
+            ->findAll();
+
+        if (empty($prestamos)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'No se encontraron préstamos activos para ese lote.']);
+        }
+
+        // IDs/valores de OTI: AJUSTA según tu sistema
+        $otiPersonaId = 254;      // persona OTI (quien queda "dueño" después de la devolución)
+        $otiDepartamentoId = 1;   // departamento OTI
+        $otiLocalId = 5;          // local OTI
+
+        // Datos del usuario que realiza la devolución (desde session)
+        $userId = session('id') ?? null;
+        $userName = trim((session('nombre') ?? '') . ' ' . (session('ape_paterno') ?? '') . ' ' . (session('ape_materno') ?? ''));
+        $userDeptId = session('id_departamentos') ?? session('id_departamento') ?? null;
+        $userLocalId = session('id_locales') ?? session('id_local') ?? null;
+
+        // Obtener nombres de departamento/local del que devuelve (si existen)
+        $deptName = null;
+        $localName = null;
+        if ($userDeptId) {
+            $depModel = new \App\Models\DepartamentosModel();
+            $d = $depModel->find($userDeptId);
+            $deptName = $d['nombre'] ?? null;
+        }
+        if ($userLocalId) {
+            $locModel = new \App\Models\LocalesModel();
+            $l = $locModel->find($userLocalId);
+            $localName = $l['nombre'] ?? null;
+        }
+
+        $fecha = date('Y-m-d H:i:s');
+        $nuevoLote = 'dev_' . $lote . '_' . time();
+
+        foreach ($prestamos as $p) {
+            $idBien = $p['id_bienes'] ?? null;
+            if (empty($idBien))
+                continue;
+
+            // obtener datos actuales del bien para campos "anterior"
+            $bien = $this->bienesModel->find($idBien);
+
+            // Observaciones que indican quién devolvió + área + local + fecha
+            $observ = sprintf(
+                "Devuelto por: %s | Área: %s | Local: %s | Fecha devolución: %s",
+                $userName ?: 'Desconocido',
+                $deptName ?: '-',
+                $localName ?: '-',
+                date('d-m-Y H:i', strtotime($fecha))
+            );
+
+            // Insertar movimiento de devolución (destino: OTI), registrando en observaciones quien devolvió
+            $this->asignacionModel->insert([
+                'id_bienes' => $idBien,
+                'id_personas' => $otiPersonaId,
+                'id_departamentos' => $otiDepartamentoId,
+                'id_locales' => $otiLocalId,
+                'tipo_movimiento' => 'devolucion',
+                'fecha_movimiento' => $fecha,
+                'observaciones' => $observ,
+                'lote' => $nuevoLote,
+                // datos anteriores para historial
+                'id_persona_anterior' => $p['id_personas'] ?? null,
+                'id_departamento_anterior' => $p['id_departamentos'] ?? ($bien['id_departamentos'] ?? null),
+                'id_local_anterior' => $p['id_locales'] ?? ($bien['id_locales'] ?? $bien['id_local'] ?? null),
+                'anulado' => 0,
+            ]);
+
+            // Actualizar el bien para que vuelva a OTI
+            $this->bienesModel->update($idBien, [
+                'id_personas' => $otiPersonaId,
+                'id_departamentos' => $otiDepartamentoId,
+                'id_locales' => $otiLocalId,
+                'estado' => 'disponible'
+            ]);
+        }
+
+        // Devolver info útil para el frontend (para actualizar fila)
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Préstamo devuelto y bienes regresados a OTI.',
+            'lote' => $lote,
+            'oti_departamento_id' => $otiDepartamentoId,
+            'oti_local_id' => $otiLocalId,
+            'oti_departamento_nombre' => (new \App\Models\DepartamentosModel())->find($otiDepartamentoId)['nombre'] ?? 'OTI',
+            'oti_local_nombre' => (new \App\Models\LocalesModel())->find($otiLocalId)['nombre'] ?? 'OTI',
+            'returner_name' => $userName
+        ]);
     }
 
 }

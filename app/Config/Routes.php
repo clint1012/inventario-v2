@@ -30,6 +30,12 @@ $routes->resource('optimizacion', ['controller' => 'Optimizacion', 'placeholder'
 $routes->resource('licencias', ['controller' => 'Licencias', 'placeholder' => '(:num)', 'filter' => 'auth']);
 
 
+
+$routes->get('inventario', 'Inventario::index', ['filter' => 'auth']);
+$routes->get('inventario/buscar-usuarios', 'Inventario::buscarUsuarios', ['filter' => 'auth']);
+$routes->get('inventario/equipos/(:num)', 'Inventario::equiposPorUsuario/$1', ['filter' => 'auth']);
+$routes->post('inventario/registrar', 'Inventario::registrar', ['filter' => 'auth']);
+
 // Rutas adicionales optimizacion
 $routes->get('optimizacion/buscarBien/(:segment)', 'Optimizacion::buscarBien/$1', ['filter' => 'auth']);
 $routes->get('bienes/getPorCodigo/(:any)', 'Bienes::getPorCodigo/$1', ['filter' => 'auth']);
@@ -66,6 +72,8 @@ $routes->get('movimientos/descargarCargoLote/(:segment)', 'Asignacion::descargar
 $routes->get('movimientos/descargarActa/(:num)', 'Asignacion::descargarActa/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)/(:segment)', 'Asignacion::descargarActa/$1/$2', ['filter' => 'auth']);
 $routes->post('movimientos/anular/(:segment)', 'Asignacion::anular/$1', ['filter' => 'auth']);
+$routes->get('movimientos/prestamos-por-vencer', 'Asignacion::prestamosPorVencer', ['filter' => 'auth']);
+$routes->post('movimientos/devolverPrestamo/(:segment)', 'Asignacion::devolverPrestamo/$1', ['filter' => 'auth']);
 
 
 
@@ -77,6 +85,7 @@ $routes->get('bienes/reporte_bienes', 'Bienes::reporte_bienes', ['filter' => 'au
 $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 'auth']);
 $routes->post('bienes/desactivar', 'Bienes::desactivar', ['filter' => 'auth']);
 $routes->post('bienes/getMantenimiento', 'Bienes::getMantenimiento', ['filter' => 'auth']);
+$routes->get('bienes/detalle-por-codigo', 'Bienes::detallePorCodigo',['filter' => 'auth']);
 $routes->get('bienes/getUsuariosSugeridos', 'Bienes::getUsuariosSugeridos', ['filter' => 'auth']);
 $routes->get('bienes/locales', 'Bienes::getLocales', ['filter' => 'auth']);
 $routes->get('bienes/departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);
@@ -84,7 +93,13 @@ $routes->get('bienes/marcas', 'Bienes::getMarcas', ['filter' => 'auth']);
 $routes->get('bienes/modelos', 'Bienes::getModelos', ['filter' => 'auth']);
 $routes->get('bienes/buscarDescripcion', 'Bienes::buscarDescripcion', ['filter' => 'auth']);
 $routes->post('bienes/filtrar', 'Bienes::filtrar',['filter' => 'auth']);
-
+$routes->get('bienes/exportarFiltrado', 'Bienes::exportarFiltrado', ['filter' => 'auth']);
+$routes->post('bienes/recuperar-mantenimiento', 'Bienes::recuperarMantenimiento', ['filter' => 'auth']);
+$routes->get('bienes/buscar-por-sbn', 'Bienes::buscarPorSbn', ['filter' => 'auth']);
+$routes->get('bienes/autocompletar-descripcion', 'Bienes::autocompletarDescripcion', ['filter' => 'auth']);
+$routes->post('bienes/actualizar-ubicacion', 'Bienes::actualizarUbicacion', ['filter' => 'auth']);
+$routes->get('bienes/get-locales', 'Bienes::getLocales', ['filter' => 'auth']);
+$routes->get('bienes/get-departamentos', 'Bienes::getDepartamentos', ['filter' => 'auth']);
 
 // ======================================================
 // Inventario extras
@@ -96,7 +111,15 @@ $routes->get('inventario2025/reporte_asignacion', 'Inventario2025::reporte_asign
 $routes->put('inventario2025/(:num)', 'Inventario2025::update/$1', ['filter' => 'auth']);
 $routes->get('inventario2025/editar/(:num)', 'Inventario2025::edit/$1', ['filter' => 'auth']);
 $routes->delete('inventario2025/delete/(:num)', 'Inventario2025::delete/$1', ['filter' => 'auth']);
-
+$routes->post('inventario/liberar-bien', 'Inventario::liberarBien', ['filter' => 'auth']);
+$routes->post('inventario/asignar-bien', 'Inventario::asignarBien', ['filter' => 'auth']);
+$routes->get('inventario/listado', 'Inventario::listado', ['filter' => 'auth']);
+$routes->get('inventario/exportar-pdf', 'Inventario::exportarPdf', ['filter' => 'auth']);
+$routes->get('inventario/exportar-excel', 'Inventario::exportarExcel', ['filter' => 'auth']);
+$routes->get('inventario/buscar-jefes', 'Inventario::buscarJefes', ['filter' => 'auth']);
+$routes->get('inventario/editar/(:num)', 'Inventario::editar/$1', ['filter' => 'auth']);
+$routes->post('inventario/actualizar/(:num)', 'Inventario::actualizar/$1', ['filter' => 'auth']);
+$routes->post('inventario/eliminar', 'Inventario::eliminar', ['filter' => 'auth']);
 // ======================================================
 // Baja extras
 // ======================================================
@@ -124,6 +147,12 @@ $routes->get('ip/exportarPDF', 'IpController::exportarPDF', ['filter' => 'auth']
 $routes->get('ip/eliminar192', 'IpController::eliminar192', ['filter' => 'auth']);
 $routes->get('ip/buscarAsignacionBien', 'IpController::buscarAsignacionBien', ['filter' => 'auth']);
 
+
+// ======================================================
+// personas
+// ======================================================
+$routes->post('personas/desactivar/(:num)', 'Personas::desactivar/$1', ['filter' => 'auth']);
+$routes->post('personas/recuperar/(:num)', 'Personas::recuperar/$1', ['filter' => 'auth']);
 
 
 // ======================================================

@@ -76,9 +76,6 @@ class AsignacionModel extends Model
             ->getResultArray();
     }
 
-
-
-
     public function getBienesCambio($idPersona)
     {
         // Bienes retirados
@@ -129,7 +126,7 @@ class AsignacionModel extends Model
 
     public function getResumenUsuariosAgrupado()
     {
-        $movimientos = $this->db->table('movimientos m')
+        $builder = $this->db->table('movimientos m')
             ->select("
             m.lote,
             m.fecha_movimiento,
@@ -177,11 +174,11 @@ class AsignacionModel extends Model
             ->join('locales l', 'l.id = m.id_locales', 'left')
             ->join('departamentos d2', 'd2.id = m.id_departamento_anterior', 'left')
             ->join('locales l2', 'l2.id = m.id_local_anterior', 'left')
+            ->where('m.anulado', 0)
             ->groupBy('m.lote')
-            ->orderBy('m.fecha_movimiento', 'DESC')
-            ->get()
-            ->getResultArray();
+            ->orderBy('YEAR(m.fecha_movimiento) ASC, MONTH(m.fecha_movimiento) ASC, m.fecha_movimiento ASC');
 
+        $movimientos = $builder->get()->getResultArray();
         // Obtener bienes de cada lote
         foreach ($movimientos as &$mov) {
             $mov['bienes'] = $this->db->table('movimientos m')
@@ -195,7 +192,23 @@ class AsignacionModel extends Model
         return $movimientos;
     }
 
+    public function getPrestamosPorVencer(int $dias = 7)
+    {
+        $hoy = date('Y-m-d');
+        $fin = date('Y-m-d', strtotime("+{$dias} days"));
 
+        $builder = $this->db->table('movimientos m')
+            ->select('m.lote, m.fecha_limite_prestamo, m.id_personas, p.nombre, p.ape_paterno, p.ape_materno, COUNT(*) AS total_bienes')
+            ->join('personas p', 'p.id = m.id_personas', 'left')
+            ->where('m.tipo_movimiento', 'prestamo')
+            ->where('m.anulado', 0)
+            ->where("DATE(m.fecha_limite_prestamo) >=", $hoy)
+            ->where("DATE(m.fecha_limite_prestamo) <=", $fin)
+            ->groupBy('m.lote')
+            ->orderBy('m.fecha_limite_prestamo', 'ASC');
+
+        return $builder->get()->getResultArray();
+    }
 
 
 
