@@ -60,7 +60,7 @@
                     <!-- ACCIONES -->
                     <td>
                         <a href="<?= base_url('movimientos/descargarCargoLote/' . $mov['lote']) ?>"
-                            class="btn btn-sm btn-primary">PDF</a>
+                            class="btn btn-sm btn-primary" target="_blank">PDF</a>
 
                         <button class="btn btn-sm btn-danger btnAnular" data-id="<?= $mov['id'] ?? '' ?>"
                             data-lote="<?= $mov['lote'] ?>">
@@ -120,7 +120,8 @@
 
         const table = $('#tablaMovimientos').DataTable({
             responsive: true,
-            language: { url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" }
+            language: { url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json" },
+            order: []  // Desactiva el ordenamiento automático
         });
 
         $(document).on('click', '.btnAnular', function () {
@@ -214,6 +215,12 @@
         });
     });
 </script>
+
+<?php if (session('pdf_lote')): ?>
+<script>
+    window.open('<?= base_url('movimientos/descargarCargoLote/' . session('pdf_lote')) ?>', '_blank');
+</script>
+<?php endif; ?>
 <?= $this->endSection() ?>
 
 <?= $this->endSection(); ?>

@@ -313,8 +313,8 @@
             <td>
                 <div class="linea"></div>
                 <p><strong>BORIS HORNA L.</strong></p>
-                <p>Especialista Técnico</p>
                 <p>Oficina de Tecnología de la Información</p>
+                <p>Tribunal Constitucional</p>
             </td>
         </tr>
     </table>

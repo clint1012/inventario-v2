@@ -12,8 +12,8 @@ $routes->post('/login/doLogin', 'Login::doLogin');
 $routes->get('/logout', 'Login::logout');
 
 // Home protegido
-$routes->get('/', 'Home::index', ['filter' => 'auth']);
-$routes->get('/home', 'Home::index', ['filter' => 'auth']);
+$routes->get('/', 'Dashboard::index', ['filter' => 'auth']);
+$routes->get('/home', 'Dashboard::index', ['filter' => 'auth']);
 
 // ======================================================
 //  RESTful

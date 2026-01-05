@@ -17,6 +17,8 @@ class AsignacionModel extends Model
         'id_departamentos',
         'id_locales',
         'id_persona_anterior',
+        'id_departamento_anterior',
+        'id_local_anterior',
         'tipo_movimiento',
         'fecha_movimiento',
         'observaciones',
@@ -129,7 +131,7 @@ class AsignacionModel extends Model
         $builder = $this->db->table('movimientos m')
             ->select("
             m.lote,
-            m.fecha_movimiento,
+            MAX(m.fecha_movimiento) AS fecha_movimiento,
             m.anulado,
 
             -- Determinar automáticamente si el lote es CAMBIO
@@ -176,7 +178,7 @@ class AsignacionModel extends Model
             ->join('locales l2', 'l2.id = m.id_local_anterior', 'left')
             ->where('m.anulado', 0)
             ->groupBy('m.lote')
-            ->orderBy('YEAR(m.fecha_movimiento) ASC, MONTH(m.fecha_movimiento) ASC, m.fecha_movimiento ASC');
+            ->orderBy('MAX(m.fecha_movimiento)', 'DESC');
 
         $movimientos = $builder->get()->getResultArray();
         // Obtener bienes de cada lote

@@ -81,7 +81,9 @@ class Asignacion extends BaseController
             $this->procesarAsignacion($bienesAsignar, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
         }
 
-        return redirect()->to(base_url('movimientos/descargarCargoLote/' . $lote));
+        return redirect()->to(base_url('movimientos'))
+            ->with('pdf_lote', $lote)
+            ->with('success', 'Movimiento registrado correctamente');
     }
 
     // 📌 Procesar asignaciones
@@ -180,7 +182,7 @@ class Asignacion extends BaseController
             $this->bienesModel->update($idBien, [
                 'estado' => 'activo',
                 'id_personas' => 254,
-                'id_departamentos' => 1, // ← corregido: usar 'id_departamentos'
+                'id_departamento' => 1, // ← corregido: usar 'id_departamentos'
                 'id_locales' => 5,
             ]);
         }
@@ -239,15 +241,15 @@ class Asignacion extends BaseController
             return redirect()->to('movimientos')->with('error', 'Lote no especificado.');
         }
 
-        $movimiento = $movModel->where('lote', $lote)->first();
-        if (!$movimiento) {
+        $movimientos = $movModel->where('lote', $lote)->findAll();
+        if (empty($movimientos)) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Lote no encontrado.']);
             }
             return redirect()->to('movimientos')->with('error', 'Lote no encontrado.');
         }
 
-        if ((int) $movimiento['anulado'] === 1) {
+        if ((int) $movimientos[0]['anulado'] === 1) {
             if ($this->request->isAJAX()) {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'El lote ya está anulado.']);
             }
@@ -256,29 +258,40 @@ class Asignacion extends BaseController
 
         $motivo = $this->request->getPost('motivo_anulacion') ?? 'Anulación manual';
 
-        // Marcar lote como anulado y guardar motivo + fecha
+        // 🔄 REVERTIR cada bien a su estado ANTERIOR
+        foreach ($movimientos as $mov) {
+            $idBien = $mov['id_bienes'];
+
+            // Restaurar al dueño anterior, departamento anterior y local anterior
+            $dataRevertir = [
+                'id_personas' => $mov['id_persona_anterior'],
+                'id_departamento' => $mov['id_departamento_anterior'],
+                'id_locales' => $mov['id_local_anterior'],
+            ];
+
+            // Ajustar el estado según el tipo de movimiento que se está anulando
+            if ($mov['tipo_movimiento'] === 'retiro') {
+                // Si era un retiro, volver al estado anterior (probablemente 'asignado')
+                $dataRevertir['estado'] = 'asignado';
+            } elseif ($mov['tipo_movimiento'] === 'prestamo') {
+                $dataRevertir['estado'] = 'asignado';
+            } elseif ($mov['tipo_movimiento'] === 'asignacion') {
+                // Si era una asignación, volver al estado anterior
+                $dataRevertir['estado'] = $mov['id_persona_anterior'] ? 'asignado' : 'disponible';
+            }
+
+            $bienesModel->update($idBien, $dataRevertir);
+        }
+
+        // Marcar lote como anulado
         $movModel->where('lote', $lote)->set([
             'motivo_anulacion' => $motivo,
             'anulado' => 1,
             'fecha_anulacion' => date('Y-m-d H:i:s')
         ])->update();
 
-        // Liberar bienes involucrados (ejemplo: poner id_personas=null, id_departamentos=null, id_locales=OTI o null según tu lógica)
-        $bienesIds = $movModel->select('id_bienes')->where('lote', $lote)->findAll();
-        foreach ($bienesIds as $b) {
-            if (!empty($b['id_bienes'])) {
-                // Ajusta según tu lógica de "liberar" el bien (ej. id_personas = null, id_departamentos = OTI_ID, estado = 'libre', etc.)
-                $bienesModel->update($b['id_bienes'], [
-                    'id_personas' => null,
-                    // 'id_departamentos' => $otiId, // descomenta y ajusta si corresponde
-                    // 'id_locales' => $otiLocalId,
-                    'estado' => 'disponible'
-                ]);
-            }
-        }
-
         if ($this->request->isAJAX()) {
-            return $this->response->setJSON(['status' => 'success', 'message' => 'Lote anulado correctamente.']);
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Lote anulado y bienes revertidos correctamente.']);
         }
 
         return redirect()->to('movimientos')->with('success', 'El lote fue anulado correctamente.');
@@ -360,11 +373,12 @@ class Asignacion extends BaseController
         $snappy->setOption('enable-local-file-access', true);
         $snappy->setOption('page-size', 'A4');
 
+        $pdfContent = $snappy->getOutputFromHtml($html);
+
         return $this->response
             ->setContentType('application/pdf')
-            ->setBody(
-                $snappy->getOutputFromHtml($html)
-            );
+            ->setHeader('Content-Disposition', 'inline; filename="Movimiento_' . $lote . '.pdf"')
+            ->setBody($pdfContent);
     }
 
 
@@ -556,8 +570,8 @@ class Asignacion extends BaseController
                 'lote' => $nuevoLote,
                 // datos anteriores para historial
                 'id_persona_anterior' => $p['id_personas'] ?? null,
-                'id_departamento_anterior' => $p['id_departamentos'] ?? ($bien['id_departamentos'] ?? null),
-                'id_local_anterior' => $p['id_locales'] ?? ($bien['id_locales'] ?? $bien['id_local'] ?? null),
+                'id_departamento_anterior' => $p['id_departamentos'] ?? ($bien['id_departamento'] ?? null),
+                'id_local_anterior' => $p['id_locales'] ?? ($bien['id_locales'] ?? null),
                 'anulado' => 0,
             ]);
 

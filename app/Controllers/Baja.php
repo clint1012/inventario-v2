@@ -150,13 +150,13 @@ class Baja extends BaseController
         $sheet->setCellValue('B1', 'Descripción');
         $sheet->setCellValue('C1', 'Marca');
         $sheet->setCellValue('D1', 'Modelo');
-        $sheet->setCellValue('E1', 'Departamento');
-        $sheet->setCellValue('F1', 'Estado');
-        $sheet->setCellValue('G1', 'Fecha de Compra');
-        $sheet->setCellValue('H1', 'Estado Garantía');
-        $sheet->setCellValue('I1', 'Proveedor_id');
-        $sheet->setCellValue('J1', 'Ultima Modificacion');
-        $sheet->setCellValue('K1', 'Motivo de Baja');
+        $sheet->setCellValue('E1', 'Serie');
+        $sheet->setCellValue('F1', 'Departamento');
+        $sheet->setCellValue('G1', 'Estado');
+        $sheet->setCellValue('H1', 'Fecha de Compra');
+        $sheet->setCellValue('I1', 'Estado Garantía');
+        $sheet->setCellValue('J1', 'Motivo de Baja');
+        $sheet->setCellValue('K1', 'Recomendación');
         $sheet->setCellValue('L1', 'Foto Frontal');
         $sheet->setCellValue('M1', 'Foto Lateral');
 
@@ -164,8 +164,12 @@ class Baja extends BaseController
         $sheet->getColumnDimension('L')->setWidth(30);
         $sheet->getColumnDimension('M')->setWidth(30);
 
-        // Ancho máximo para Motivo de Baja y ajustar texto (wrap)
-        $sheet->getColumnDimension('K')->setWidth(50); // ajuste el valor según prefiera
+        // Ancho para Motivo de Baja y Recomendación con ajuste de texto (wrap)
+        $sheet->getColumnDimension('J')->setWidth(50);
+        $sheet->getStyle('J')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('J')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+
+        $sheet->getColumnDimension('K')->setWidth(30);
         $sheet->getStyle('K')->getAlignment()->setWrapText(true);
         $sheet->getStyle('K')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
 
@@ -178,15 +182,18 @@ class Baja extends BaseController
             $sheet->setCellValue('B' . $fila, $bien['descripcion']);
             $sheet->setCellValue('C' . $fila, $bien['marca']);
             $sheet->setCellValue('D' . $fila, $bien['modelo']);
-            $sheet->setCellValue('E' . $fila, $bien['nombre_departamento']);
-            $sheet->setCellValue('F' . $fila, $bien['estado']);
-            $sheet->setCellValue('G' . $fila, $bien['fecha_adquisicion']);
-            $sheet->setCellValue('H' . $fila, $bien['estado_garantia']);
-            $sheet->setCellValue('I' . $fila, $bien['proveedor_id']);
-            $sheet->setCellValue('J' . $fila, $bien['updated_at']);
-            $sheet->setCellValue('K' . $fila, $bien['motivo_baja']);
+            $sheet->setCellValue('E' . $fila, $bien['serie']);
+            $sheet->setCellValue('F' . $fila, $bien['nombre_departamento']);
+            $sheet->setCellValue('G' . $fila, $bien['estado']);
+            $sheet->setCellValue('H' . $fila, $bien['fecha_adquisicion']);
+            $sheet->setCellValue('I' . $fila, $bien['estado_garantia']);
+            $sheet->setCellValue('J' . $fila, $bien['motivo_baja']);
+            $sheet->setCellValue('K' . $fila, 'DAR DE BAJA RAEE');
 
-            // Asegurar que la celda de motivo use wrap (por si necesita)
+            // Asegurar que las celdas usen wrap
+            $sheet->getStyle('J' . $fila)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('J' . $fila)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+
             $sheet->getStyle('K' . $fila)->getAlignment()->setWrapText(true);
             $sheet->getStyle('K' . $fila)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
 
