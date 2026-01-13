@@ -19,6 +19,7 @@ class AsignacionModel extends Model
         'id_persona_anterior',
         'id_departamento_anterior',
         'id_local_anterior',
+        'estado_anterior',
         'tipo_movimiento',
         'fecha_movimiento',
         'observaciones',
@@ -178,7 +179,7 @@ class AsignacionModel extends Model
             ->join('locales l2', 'l2.id = m.id_local_anterior', 'left')
             ->where('m.anulado', 0)
             ->groupBy('m.lote')
-            ->orderBy('MAX(m.fecha_movimiento)', 'DESC');
+            ->orderBy('fecha_movimiento', 'DESC');
 
         $movimientos = $builder->get()->getResultArray();
         // Obtener bienes de cada lote

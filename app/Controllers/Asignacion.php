@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\AsignacionModel;
+use App\Models\AuditoriaModel;
 use App\Models\BienesModel;
 use App\Models\PersonasModel;
 use App\Models\DepartamentosModel;
@@ -81,6 +82,13 @@ class Asignacion extends BaseController
             $this->procesarAsignacion($bienesAsignar, $idPersona, $idDepartamento, $idLocal, $fecha, $observaciones, $lote);
         }
 
+        // Registrar en auditoría
+        AuditoriaModel::registrar('CREAR', 'Movimientos', null, [
+            'lote' => $lote,
+            'tipo' => $tipo,
+            'fecha_movimiento' => $fecha
+        ]);
+
         return redirect()->to(base_url('movimientos'))
             ->with('pdf_lote', $lote)
             ->with('success', 'Movimiento registrado correctamente');
@@ -109,6 +117,7 @@ class Asignacion extends BaseController
                 'id_persona_anterior' => $dueñoAnterior, // 📌 historial
                 'id_departamento_anterior' => $bien['id_departamento'], // ← corregido: usar id_departamentos del bien
                 'id_local_anterior' => $bien['id_locales'],
+                'estado_anterior' => $bien['estado'], // 🔄 Guardar estado anterior
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -144,6 +153,7 @@ class Asignacion extends BaseController
                 'fecha_limite_prestamo' => $fechaLimite,
                 'id_departamento_anterior' => $bien['id_departamento'], // ← corregido
                 'id_local_anterior' => $bien['id_locales'],
+                'estado_anterior' => $bien['estado'], // 🔄 Guardar estado anterior
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -177,6 +187,7 @@ class Asignacion extends BaseController
                 'id_persona_anterior' => $dueñoAnterior,
                 'id_departamento_anterior' => $bien['id_departamento'], // ← corregido
                 'id_local_anterior' => $bien['id_locales'],
+                'estado_anterior' => $bien['estado'], // 🔄 Guardar estado anterior
             ]);
 
             $this->bienesModel->update($idBien, [
@@ -269,15 +280,18 @@ class Asignacion extends BaseController
                 'id_locales' => $mov['id_local_anterior'],
             ];
 
-            // Ajustar el estado según el tipo de movimiento que se está anulando
-            if ($mov['tipo_movimiento'] === 'retiro') {
-                // Si era un retiro, volver al estado anterior (probablemente 'asignado')
-                $dataRevertir['estado'] = 'asignado';
-            } elseif ($mov['tipo_movimiento'] === 'prestamo') {
-                $dataRevertir['estado'] = 'asignado';
-            } elseif ($mov['tipo_movimiento'] === 'asignacion') {
-                // Si era una asignación, volver al estado anterior
-                $dataRevertir['estado'] = $mov['id_persona_anterior'] ? 'asignado' : 'disponible';
+            // ✅ Restaurar el estado anterior guardado
+            if (!empty($mov['estado_anterior'])) {
+                $dataRevertir['estado'] = $mov['estado_anterior'];
+            } else {
+                // Fallback para movimientos antiguos sin estado_anterior
+                if ($mov['tipo_movimiento'] === 'retiro') {
+                    $dataRevertir['estado'] = 'asignado';
+                } elseif ($mov['tipo_movimiento'] === 'prestamo') {
+                    $dataRevertir['estado'] = 'asignado';
+                } elseif ($mov['tipo_movimiento'] === 'asignacion') {
+                    $dataRevertir['estado'] = $mov['id_persona_anterior'] ? 'asignado' : 'disponible';
+                }
             }
 
             $bienesModel->update($idBien, $dataRevertir);
@@ -289,6 +303,13 @@ class Asignacion extends BaseController
             'anulado' => 1,
             'fecha_anulacion' => date('Y-m-d H:i:s')
         ])->update();
+
+        // Registrar en auditoría
+        AuditoriaModel::registrar('ANULAR', 'Movimientos', null, [
+            'lote' => $lote,
+            'motivo' => $motivo,
+            'cantidad_bienes' => count($movimientos)
+        ]);
 
         if ($this->request->isAJAX()) {
             return $this->response->setJSON(['status' => 'success', 'message' => 'Lote anulado y bienes revertidos correctamente.']);
@@ -584,6 +605,14 @@ class Asignacion extends BaseController
             ]);
         }
 
+        // Registrar en auditoría
+        AuditoriaModel::registrar('DEVOLVER', 'Movimientos', null, [
+            'lote_original' => $lote,
+            'nuevo_lote' => $nuevoLote,
+            'usuario_devolucion' => $userName,
+            'cantidad_bienes' => count($prestamos)
+        ]);
+
         // Devolver info útil para el frontend (para actualizar fila)
         return $this->response->setJSON([
             'status' => 'success',
@@ -595,6 +624,52 @@ class Asignacion extends BaseController
             'oti_local_nombre' => (new \App\Models\LocalesModel())->find($otiLocalId)['nombre'] ?? 'OTI',
             'returner_name' => $userName
         ]);
+    }
+
+    // 📌 Obtener personas con búsqueda
+    public function getPersonas()
+    {
+        $query = $this->request->getGet('q');
+        
+        if (empty($query) || strlen($query) < 3) {
+            return $this->response->setJSON([]);
+        }
+
+        $personasModel = new PersonasModel();
+        $personas = $personasModel
+            ->like('nombre', $query)
+            ->orLike('ape_paterno', $query)
+            ->orLike('ape_materno', $query)
+            ->orderBy('nombre', 'ASC')
+            ->findAll(20);
+
+        $resultado = [];
+        foreach ($personas as $persona) {
+            $resultado[] = [
+                'id' => $persona['id'],
+                'nombre_completo' => trim($persona['nombre'] . ' ' . $persona['ape_paterno'] . ' ' . $persona['ape_materno'])
+            ];
+        }
+
+        return $this->response->setJSON($resultado);
+    }
+
+    // 📌 Obtener departamentos con búsqueda
+    public function getDepartamentos()
+    {
+        $query = $this->request->getGet('q');
+        
+        if (empty($query) || strlen($query) < 3) {
+            return $this->response->setJSON([]);
+        }
+
+        $departamentosModel = new DepartamentosModel();
+        $departamentos = $departamentosModel
+            ->like('nombre', $query)
+            ->orderBy('nombre', 'ASC')
+            ->findAll(20);
+
+        return $this->response->setJSON($departamentos);
     }
 
 }

@@ -83,6 +83,12 @@ class Usuarios extends BaseController
             return $this->response->setStatusCode(500)->setJSON(['ok' => false, 'msg' => 'Error al crear usuario']);
         }
 
+        // Registrar en auditoría
+        registrar_auditoria('crear', 'usuarios', $insertId, [
+            'usuario' => $post['usuario'],
+            'nombre' => $post['nombre']
+        ]);
+
         return $this->response->setJSON(['ok' => true, 'msg' => 'Usuario creado', 'id' => $insertId]);
     }
 
@@ -111,6 +117,21 @@ class Usuarios extends BaseController
             return $this->response->setStatusCode(500)->setJSON(['ok' => false, 'msg' => 'Error al actualizar']);
         }
 
+        // Registrar en auditoría
+        $cambios = [];
+        foreach ($data as $campo => $valor) {
+            if ($campo !== 'password' && $user[$campo] !== $valor) {
+                $cambios[$campo] = ['anterior' => $user[$campo], 'nuevo' => $valor];
+            }
+        }
+        if (!empty($cambios) || isset($data['password'])) {
+            registrar_auditoria('actualizar', 'usuarios', $id, [
+                'usuario' => $user['usuario'],
+                'cambios' => $cambios,
+                'password_cambiado' => isset($data['password'])
+            ]);
+        }
+
         return $this->response->setJSON(['ok' => true, 'msg' => 'Usuario actualizado']);
     }
 
@@ -124,6 +145,13 @@ class Usuarios extends BaseController
 
         $nuevoEstado = ($user['estado'] === 'activo') ? 'inactivo' : 'activo';
         $this->usuarios->update($id, ['estado' => $nuevoEstado]);
+
+        // Registrar en auditoría
+        registrar_auditoria($nuevoEstado === 'activo' ? 'activar' : 'desactivar', 'usuarios', $id, [
+            'usuario' => $user['usuario'],
+            'estado_anterior' => $user['estado'],
+            'estado_nuevo' => $nuevoEstado
+        ]);
 
         return $this->response->setJSON(['ok' => true, 'msg' => 'Estado actualizado', 'estado' => $nuevoEstado]);
     }
@@ -149,12 +177,23 @@ class Usuarios extends BaseController
             return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'msg' => 'Usuario no recibido']);
         }
 
+        // Obtener roles anteriores para auditoría
+        $rolesAnteriores = $this->usuariosRoles->where('usuario_id', $uid)->findColumn('rol_id');
+        
         // eliminar previos
         $this->usuariosRoles->where('usuario_id', $uid)->delete();
 
         foreach ($roles as $rid) {
             $this->usuariosRoles->insert(['usuario_id' => $uid, 'rol_id' => $rid]);
         }
+
+        // Registrar en auditoría
+        $usuario = $this->usuarios->find($uid);
+        registrar_auditoria('asignar_roles', 'usuarios', $uid, [
+            'usuario' => $usuario['usuario'] ?? 'Desconocido',
+            'roles_anteriores' => $rolesAnteriores ?? [],
+            'roles_nuevos' => $roles
+        ]);
 
         return $this->response->setJSON(['ok' => true, 'msg' => 'Roles asignados']);
     }
@@ -198,6 +237,13 @@ class Usuarios extends BaseController
         $db = \Config\Database::connect();
         $builder = $db->table('usuarios_permisos');
 
+        // Obtener permisos anteriores para auditoría
+        $permisosAnteriores = $builder->select('permiso_id')
+            ->where('usuario_id', $usuario_id)
+            ->get()
+            ->getResultArray();
+        $permisosAnteriores = array_column($permisosAnteriores, 'permiso_id');
+
         // 1. Borrar todos los permisos actuales del usuario
         $builder->where('usuario_id', $usuario_id)->delete();
 
@@ -208,6 +254,14 @@ class Usuarios extends BaseController
                 'permiso_id' => $permiso_id
             ]);
         }
+
+        // Registrar en auditoría
+        $usuario = $this->usuarios->find($usuario_id);
+        registrar_auditoria('asignar_permisos', 'usuarios', $usuario_id, [
+            'usuario' => $usuario['usuario'] ?? 'Desconocido',
+            'permisos_anteriores' => $permisosAnteriores,
+            'permisos_nuevos' => $permisos
+        ]);
 
         return $this->response->setJSON([
             'ok' => true,

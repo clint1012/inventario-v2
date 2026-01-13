@@ -1,116 +1,35 @@
 <?php echo $this->extend('plantilla'); ?>
 <?= $this->section('contenido'); ?>
 
-<style>
-    .form-card {
-        border-left: 4px solid #ffc107;
-    }
-    .section-title {
-        background: linear-gradient(135deg, #c41e3a 0%, #8B1538 100%);
-        color: white;
-        padding: 0.75rem 1rem;
-        border-radius: 0.25rem;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-    }
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        font-size: 0.9rem;
-    }
-    .form-control, .form-select {
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-        transition: all 0.3s ease;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #c41e3a;
-        box-shadow: 0 0 0 0.2rem rgba(196, 30, 58, 0.25);
-    }
-</style>
+<h3 class="my-3">Editar bien</h3>
 
-<!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="mb-1"><i class="fas fa-edit text-warning"></i> Editar Bien</h3>
-        <p class="text-muted mb-0">Código: <strong><?= $bien['cod_patrimonial'] ?></strong></p>
+
+
+<?php if (session()->getFlashdata('error') !== null) { ?>
+    <div class="alert alert-danger">
+        <?= session()->getFlashdata('error'); ?>
     </div>
-    <a href="<?= base_url('bienes') ?>" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Cancelar
-    </a>
-</div>
 
-<!-- Mensajes Flash -->
-<?php if (session()->getFlashdata('error') !== null): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle"></i> <?= session()->getFlashdata('error'); ?>
-        <button type="button" class="close" data-dismiss="alert">
-            <span>&times;</span>
-        </button>
+<?php } ?>
+
+
+
+<form action="<?= base_url('bienes/' . $bien['id']); ?>" class="row g-3" method="post" autocomplete="off"
+    onsubmit="return confirmarEnvio()">
+    <input type="hidden" name="_method" value="PUT">
+    <input type="hidden" name="bien_id" value="<?= $bien['id']; ?>">
+
+    <div class="col-md-4">
+        <label for="cod_patrimonial" class="form-label">Cod_patrimonial</label>
+        <input type="text" class="form-control" id="cod_patrimonial" name="cod_patrimonial"
+            value="<?= $bien['cod_patrimonial'] ?>" required autofocus>
     </div>
-<?php endif; ?>
 
-
-<div class="card shadow-sm form-card">
-    <div class="card-body p-4">
-        <form action="<?= base_url('bienes/' . $bien['id']); ?>" class="row g-3" method="post" autocomplete="off"
-            onsubmit="return confirmarEnvio()">
-            <input type="hidden" name="_method" value="PUT">
-            <input type="hidden" name="bien_id" value="<?= $bien['id']; ?>">
-
-            <!-- Sección: Información Básica -->
-            <div class="col-12">
-                <div class="section-title">
-                    <i class="fas fa-info-circle"></i> Información Básica
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <label for="cod_patrimonial" class="form-label">Código Patrimonial *</label>
-                <input type="text" class="form-control" id="cod_patrimonial" name="cod_patrimonial"
-                    value="<?= $bien['cod_patrimonial'] ?>" required autofocus>
-            </div>
-
-            <div class="col-md-4">
-                <label for="descripcion" class="form-label">Descripción *</label>
-                <input type="text" class="form-control" id="descripcion" name="descripcion" value="<?= $bien['descripcion'] ?>"
-                    required>
-            </div>
-
-            <div class="col-md-4">
-                <label for="tipo_bien" class="form-label">Tipo de Bien *</label>
-                <select class="form-select form-control" id="tipo_bien" name="tipo_bien" required onchange="actualizarCamposPorTipo()">
-                    <option value="">-- Seleccione el tipo --</option>
-                    <option value="computadora" <?= ($bien['tipo_bien'] ?? '') === 'computadora' ? 'selected' : '' ?>>💻 Computadora (CPU)</option>
-                    <option value="laptop" <?= ($bien['tipo_bien'] ?? '') === 'laptop' ? 'selected' : '' ?>>💻 Laptop/Portátil</option>
-                    <option value="all_in_one" <?= ($bien['tipo_bien'] ?? '') === 'all_in_one' ? 'selected' : '' ?>>🖥️ All in One (AIO)</option>
-                    <option value="monitor" <?= ($bien['tipo_bien'] ?? '') === 'monitor' ? 'selected' : '' ?>>🖥️ Monitor</option>
-                    <option value="teclado" <?= ($bien['tipo_bien'] ?? '') === 'teclado' ? 'selected' : '' ?>>⌨️ Teclado</option>
-                    <option value="mouse" <?= ($bien['tipo_bien'] ?? '') === 'mouse' ? 'selected' : '' ?>>🖱️ Mouse</option>
-                    <option value="impresora" <?= ($bien['tipo_bien'] ?? '') === 'impresora' ? 'selected' : '' ?>>🖨️ Impresora</option>
-                    <option value="scanner" <?= ($bien['tipo_bien'] ?? '') === 'scanner' ? 'selected' : '' ?>>📠 Scanner</option>
-                    <option value="multifuncional" <?= ($bien['tipo_bien'] ?? '') === 'multifuncional' ? 'selected' : '' ?>>🖨️ Multifuncional</option>
-                    <option value="switch" <?= ($bien['tipo_bien'] ?? '') === 'switch' ? 'selected' : '' ?>>🔌 Switch</option>
-                    <option value="router" <?= ($bien['tipo_bien'] ?? '') === 'router' ? 'selected' : '' ?>>📡 Router</option>
-                    <option value="access_point" <?= ($bien['tipo_bien'] ?? '') === 'access_point' ? 'selected' : '' ?>>📶 Access Point</option>
-                    <option value="camara" <?= ($bien['tipo_bien'] ?? '') === 'camara' ? 'selected' : '' ?>>📹 Cámara Videovigilancia</option>
-                    <option value="proyector" <?= ($bien['tipo_bien'] ?? '') === 'proyector' ? 'selected' : '' ?>>📽️ Proyector</option>
-                    <option value="servidor" <?= ($bien['tipo_bien'] ?? '') === 'servidor' ? 'selected' : '' ?>>🖥️ Servidor</option>
-                    <option value="nas" <?= ($bien['tipo_bien'] ?? '') === 'nas' ? 'selected' : '' ?>>💾 NAS (Storage)</option>
-                    <option value="ups" <?= ($bien['tipo_bien'] ?? '') === 'ups' ? 'selected' : '' ?>>🔋 UPS</option>
-                    <option value="rack" <?= ($bien['tipo_bien'] ?? '') === 'rack' ? 'selected' : '' ?>>🗄️ Rack/Gabinete</option>
-                    <option value="tablet" <?= ($bien['tipo_bien'] ?? '') === 'tablet' ? 'selected' : '' ?>>📱 Tablet</option>
-                    <option value="otro" <?= ($bien['tipo_bien'] ?? '') === 'otro' ? 'selected' : '' ?>>📦 Otro</option>
-                </select>
-                <small class="form-text text-muted">Los campos se ajustarán según el tipo seleccionado</small>
-            </div>
-
-            <!-- Sección: Especificaciones Técnicas -->
-            <div class="col-12 mt-4">
-                <div class="section-title">
-                    <i class="fas fa-microchip"></i> Especificaciones Técnicas
-                </div>
-            </div>
+    <div class="col-md-8">
+        <label for="descripcion" class="form-label">Descripcion</label>
+        <input type="text" class="form-control" id="descripcion" name="descripcion" value="<?= $bien['descripcion'] ?>"
+            required>
+    </div>
 
     <!--Inicio select marca-->
     <div class="col-md-6">
@@ -269,10 +188,6 @@
 
     <!--Fin select Office-->
 
-    <div class="col-md-6">
-        <label for="Ip" class="form-label">IP Address</label>
-        <input type="text" class="form-control" id="Ip" name="Ip" value="<?= $bien['Ip'] ?? '' ?>">
-    </div>
 
     <div class="col-md-6">
         <label for="estado" class="form-label">Estado</label>
@@ -415,70 +330,7 @@
 
 
 <script>
-    // 🎯 Configuración de campos requeridos por tipo de bien
-    const camposPorTipo = {
-        computadora: ['procesador', 'memoria', 'tipo_disco', 'espacio_disco', 'sistema_operativo', 'ver_office', 'Ip'],
-        laptop: ['procesador', 'memoria', 'tipo_disco', 'espacio_disco', 'sistema_operativo', 'ver_office'],
-        all_in_one: ['procesador', 'memoria', 'tipo_disco', 'espacio_disco', 'sistema_operativo', 'ver_office', 'Ip'],
-        monitor: [],
-        teclado: [],
-        mouse: [],
-        impresora: ['Ip'],
-        scanner: [],
-        multifuncional: ['Ip'],
-        switch: ['Ip'],
-        router: ['Ip'],
-        access_point: ['Ip'],
-        camara: ['Ip'],
-        proyector: [],
-        servidor: ['procesador', 'memoria', 'tipo_disco', 'espacio_disco', 'sistema_operativo', 'Ip'],
-        nas: ['memoria', 'tipo_disco', 'espacio_disco', 'Ip'],
-        ups: [],
-        rack: [],
-        tablet: ['sistema_operativo'],
-        otro: []
-    };
 
-    function actualizarCamposPorTipo() {
-        const tipoBien = document.getElementById('tipo_bien').value;
-        
-        if (!tipoBien) {
-            return;
-        }
-
-        const camposRequeridos = camposPorTipo[tipoBien] || [];
-        
-        const camposTecnicos = [
-            'procesador', 'memoria', 'tipo_disco', 'espacio_disco', 
-            'sistema_operativo', 'ver_office', 'Ip'
-        ];
-
-        camposTecnicos.forEach(campo => {
-            const elemento = document.getElementById(campo);
-            const row = elemento?.closest('.col-md-6, .col-md');
-            
-            if (row) {
-                if (camposRequeridos.includes(campo)) {
-                    row.style.display = 'block';
-                    elemento.required = false; // En edición no forzamos required
-                    if (elemento.value === 'NO APLICA') {
-                        elemento.value = '';
-                    }
-                } else {
-                    row.style.display = 'none';
-                    elemento.required = false;
-                    if (elemento.value === '') {
-                        elemento.value = 'NO APLICA';
-                    }
-                }
-            }
-        });
-    }
-
-    // Ejecutar al cargar la página
-    window.addEventListener('DOMContentLoaded', () => {
-        actualizarCamposPorTipo();
-    });
 
     function toggleOtraMarca(selectElement) {
         const otraMarcaDiv = document.getElementById('otraMarcaDiv');

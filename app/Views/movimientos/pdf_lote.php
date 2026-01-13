@@ -80,7 +80,7 @@
         }
 
         .firmas {
-            margin-top: 80px;
+            margin-top: 60px;
             width: 100%;
             border: none;
             text-align: center;
@@ -119,7 +119,7 @@
 
 <body>
 
-    <img src="<?= base_url('img/logo_principal.png') ?>" width="200">
+    <img src="<?= base_url('img/logo_principal.png') ?>" width="150">
 
     <table class="header">
         <tr>
@@ -216,7 +216,7 @@
     // Fecha
     $fecha = date('d/m/Y H:i:s', strtotime($movimientos[0]['fecha_movimiento']));
     ?>
-    <br>
+    
     <div class="info">
         <p><strong>Tipo de Movimiento:</strong> <?= $tipoLote ?></p>
         <p><strong>Usuario:</strong> <?= $usuarioDestino ?: '-' ?></p>
@@ -298,8 +298,8 @@
         </div>
     <?php endif; ?>
 
-    <br><br>
-    <p class="small"><strong>Observaciones:</strong><br><br><?= nl2br(htmlspecialchars($observaciones)) ?></p>
+    <br>
+    <p class="small"><strong>Observaciones:</strong><br><?= nl2br(htmlspecialchars($observaciones)) ?></p>
 
     <table class="firmas">
         <tr>

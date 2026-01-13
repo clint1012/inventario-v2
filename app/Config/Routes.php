@@ -14,6 +14,8 @@ $routes->get('/logout', 'Login::logout');
 // Home protegido
 $routes->get('/', 'Dashboard::index', ['filter' => 'auth']);
 $routes->get('/home', 'Dashboard::index', ['filter' => 'auth']);
+$routes->get('inicio', 'Dashboard::index', ['filter' => 'auth']);
+$routes->get('dashboard/exportarTipoBien/(:segment)', 'Dashboard::exportarTipoBien/$1', ['filter' => 'auth']);
 
 // ======================================================
 //  RESTful
@@ -26,6 +28,13 @@ $routes->resource('mantenimiento', ['placeholder' => '(:num)', 'filter' => 'auth
 $routes->resource('reportes', ['placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('ip', ['controller' => 'IpController', 'placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('proveedor', ['controller' => 'ProveedorController', 'placeholder' => '(:num)', 'filter' => 'auth']);
+
+// ======================================================
+//  Auditoría
+// ======================================================
+$routes->resource('auditoria', ['placeholder' => '(:num)', 'filter' => 'auth']);
+$routes->get('auditoria/exportar', 'Auditoria::exportar', ['filter' => 'auth']);
+$routes->post('auditoria/limpiar', 'Auditoria::limpiar', ['filter' => 'auth']);
 $routes->resource('optimizacion', ['controller' => 'Optimizacion', 'placeholder' => '(:num)', 'filter' => 'auth']);
 $routes->resource('licencias', ['controller' => 'Licencias', 'placeholder' => '(:num)', 'filter' => 'auth']);
 
@@ -67,6 +76,8 @@ $routes->resource('movimientos', [
 
 // Rutas adicionales Movimientos
 $routes->get('movimientos/buscarBienes', 'Asignacion::buscarBienes', ['filter' => 'auth']);
+$routes->get('movimientos/getPersonas', 'Asignacion::getPersonas', ['filter' => 'auth']);
+$routes->get('movimientos/getDepartamentos', 'Asignacion::getDepartamentos', ['filter' => 'auth']);
 $routes->get('movimientos/descargarCargo/(:num)', 'Asignacion::descargarCargo/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarCargoLote/(:segment)', 'Asignacion::descargarCargoLote/$1', ['filter' => 'auth']);
 $routes->get('movimientos/descargarActa/(:num)', 'Asignacion::descargarActa/$1', ['filter' => 'auth']);
@@ -75,11 +86,30 @@ $routes->post('movimientos/anular/(:segment)', 'Asignacion::anular/$1', ['filter
 $routes->get('movimientos/prestamos-por-vencer', 'Asignacion::prestamosPorVencer', ['filter' => 'auth']);
 $routes->post('movimientos/devolverPrestamo/(:segment)', 'Asignacion::devolverPrestamo/$1', ['filter' => 'auth']);
 
+// ======================================================
+//  Celulares — Gestión de equipos celulares
+// ======================================================
+// Gestión de celulares
+$routes->get('celulares', 'Celulares::index', ['filter' => 'auth']);
+$routes->get('celulares/nuevo', 'Celulares::nuevoCelular', ['filter' => 'auth']);
+$routes->post('celulares/guardar', 'Celulares::guardarCelular', ['filter' => 'auth']);
+$routes->get('celulares/editar/(:num)', 'Celulares::editarCelular/$1', ['filter' => 'auth']);
+$routes->post('celulares/actualizar/(:num)', 'Celulares::actualizarCelular/$1', ['filter' => 'auth']);
+$routes->get('celulares/baja/(:num)', 'Celulares::bajaCelular/$1', ['filter' => 'auth']);
+
+// Movimientos de celulares
+$routes->get('celulares/movimientos', 'Celulares::movimientos', ['filter' => 'auth']);
+$routes->get('celulares/movimientos/nuevo', 'Celulares::nuevoMovimiento', ['filter' => 'auth']);
+$routes->post('celulares/movimientos/guardar', 'Celulares::guardarMovimiento', ['filter' => 'auth']);
+$routes->post('celulares/movimientos/anular', 'Celulares::anularMovimiento', ['filter' => 'auth']);
+$routes->get('celulares/movimientos/pdf/(:segment)', 'Celulares::descargarPDF/$1', ['filter' => 'auth']);
+
 
 
 // ======================================================
 // Bienes extras
 // ======================================================
+$routes->get('bienes/descargarPlantillaCSV', 'Bienes::descargarPlantillaCSV', ['filter' => 'auth']);
 $routes->post('bienes/subida_masiva', 'Bienes::subida_masiva', ['filter' => 'auth']);
 $routes->get('bienes/reporte_bienes', 'Bienes::reporte_bienes', ['filter' => 'auth']);
 $routes->post('bienes/verificarCodigo', 'Bienes::verificarCodigo', ['filter' => 'auth']);

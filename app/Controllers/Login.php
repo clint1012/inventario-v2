@@ -2,14 +2,17 @@
 
 namespace App\Controllers;
 
+use App\Config\AppConstants;
+use App\Models\AuditoriaModel;
 use App\Models\UsuariosModel;
 use App\Models\UsuariosRolesModel;
 use App\Models\RolesPermisosModel;
 use CodeIgniter\Controller;
+use CodeIgniter\HTTP\RedirectResponse;
 
 class Login extends Controller
 {
-    public function index()
+    public function index(): string|RedirectResponse
     {
         // Si ya está logueado, redirige al home
         if (session()->get('logged_in')) {
@@ -19,7 +22,7 @@ class Login extends Controller
         return view('login');
     }
 
-    public function doLogin()
+    public function doLogin(): RedirectResponse
     {
         helper('url');
 
@@ -34,7 +37,7 @@ class Login extends Controller
         }
 
         // Verificar estado
-        if (isset($user['estado']) && $user['estado'] !== 'activo') {
+        if (isset($user['estado']) && $user['estado'] !== AppConstants::USUARIO_ACTIVO) {
             return redirect()->back()->with('error', 'Usuario inactivo')->withInput();
         }
 
@@ -70,16 +73,32 @@ class Login extends Controller
 
         session()->set($sessionData);
 
+        // Registrar en auditoría
+        AuditoriaModel::registrar('LOGIN', 'Sistema', $user['id'], [
+            'usuario' => $user['usuario'],
+            'nombre' => $user['nombre'] ?? ''
+        ]);
+
         return redirect()->to('/home');
     }
 
-    public function logout()
+    public function logout(): RedirectResponse
     {
+        $usuario_id = session()->get('usuario_id');
+        $usuario = session()->get('usuario');
+        
+        // Registrar en auditoría antes de destruir la sesión
+        if ($usuario_id) {
+            AuditoriaModel::registrar('LOGOUT', 'Sistema', $usuario_id, [
+                'usuario' => $usuario
+            ]);
+        }
+        
         session()->destroy();
         return redirect()->to('/login');
     }
 
-    public function verificar()
+    public function verificar(): RedirectResponse
     {
         // Si ya hay sesión activa, va al Home
         if (session()->get('logged_in')) {

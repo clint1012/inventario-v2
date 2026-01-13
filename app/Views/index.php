@@ -1,99 +1,294 @@
 <?php echo $this->extend('plantilla'); ?>
 <?= $this->section('contenido'); ?>
 
+<style>
+    .stat-card {
+        border-radius: 12px;
+        border: none;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .stat-card-header {
+        background: linear-gradient(135deg, #c41e3a 0%, #8B1538 100%);
+        color: white;
+        padding: 0.85rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stat-card-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+    
+    .stat-card-body {
+        padding: 1rem 1rem;
+        background: white;
+    }
+    
+    .stat-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #2d3748;
+        line-height: 1;
+        margin-bottom: 0.35rem;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .export-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    
+    .export-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        text-decoration: none;
+        transform: scale(1.05);
+    }
+    
+    .tipo-bien-card {
+        border-left: 4px solid #c41e3a;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .tipo-bien-card:hover {
+        box-shadow: 0 4px 15px rgba(196, 30, 58, 0.2);
+        transform: translateX(5px);
+    }
+    
+    .tipo-icon {
+        font-size: 1.5rem;
+        color: #c41e3a;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    /* Estilos unificados para tablas */
+    .table-responsive table {
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive thead th {
+        background: #f8f9fc;
+        color: #5a5c69;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e3e6f0;
+    }
+    
+    .table-responsive tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table-responsive tbody tr:hover {
+        background: #f8f9fc;
+    }
+    
+    /* Progress bars unificados */
+    .progress {
+        background: #e9ecef;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    
+    /* Alertas sin datos unificadas */
+    .text-center.text-muted {
+        color: #858796 !important;
+    }
+    
+    .text-center.text-muted i {
+        opacity: 0.5;
+    }
+</style>
+
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard - Sistema de Inventario OTI</h1>
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-tachometer-alt text-danger mr-2"></i>
+        Dashboard - Sistema de Inventario OTI
+    </h1>
+    <a href="<?= base_url('dashboard/exportarTipoBien/todos') ?>" class="btn btn-sm btn-danger shadow-sm">
+        <i class="fas fa-download fa-sm"></i> Exportar Todo
+    </a>
 </div>
 
-<!-- Content Row -->
-<div class="row">
+<!-- Estadísticas Generales -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="section-title">
+            <i class="fas fa-chart-bar mr-2"></i>Resumen General
+        </h5>
+    </div>
+</div>
 
+<div class="row">
     <!-- Total Equipos -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Total Equipos</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($total_bienes) ?></div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-laptop fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(220, 38, 38, 0.1);">
+                    <i class="fas fa-laptop" style="color: #c41e3a;"></i>
                 </div>
+                <div class="stat-number"><?= number_format($total_bienes) ?></div>
+                <div class="text-muted small font-weight-600">Total Equipos</div>
             </div>
         </div>
     </div>
 
     <!-- Equipos Activos -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Equipos Activos</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($bienes_activos) ?></div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
                 </div>
+                <div class="stat-number"><?= number_format($bienes_activos) ?></div>
+                <div class="text-muted small font-weight-600">Equipos Activos</div>
             </div>
         </div>
     </div>
 
     <!-- En Mantenimiento -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            En Mantenimiento</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($bienes_mantenimiento) ?>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-tools fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1);">
+                    <i class="fas fa-tools" style="color: #fbbf24;"></i>
                 </div>
+                <div class="stat-number"><?= number_format($bienes_mantenimiento) ?></div>
+                <div class="text-muted small font-weight-600">En Mantenimiento</div>
             </div>
         </div>
     </div>
 
     <!-- Equipos Asignados -->
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Asignados</div>
-                        <div class="row no-gutters align-items-center">
-                            <div class="col-auto">
-                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
-                                    <?= number_format($bienes_asignados) ?>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="progress progress-sm mr-2">
-                                    <?php $porcentaje = $total_bienes > 0 ? round(($bienes_asignados / $total_bienes) * 100) : 0; ?>
-                                    <div class="progress-bar bg-info" role="progressbar"
-                                        style="width: <?= $porcentaje ?>%" aria-valuenow="<?= $porcentaje ?>"
-                                        aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                    </div>
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">
+                    <i class="fas fa-user-check" style="color: #3b82f6;"></i>
                 </div>
+                <div class="stat-number"><?= number_format($bienes_asignados) ?></div>
+                <div class="text-muted small font-weight-600">Asignados</div>
+                <?php $porcentaje = $total_bienes > 0 ? round(($bienes_asignados / $total_bienes) * 100) : 0; ?>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar bg-info" style="width: <?= $porcentaje ?>%"></div>
+                </div>
+                <small class="text-muted"><?= $porcentaje ?>% del total</small>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Estadísticas por Tipo de Bien -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="section-title">
+            <i class="fas fa-cubes mr-2"></i>Bienes por Tipo
+        </h5>
+    </div>
+</div>
+
+<div class="row">
+    <?php if (!empty($bienes_por_tipo)): ?>
+        <?php 
+        $iconos = [
+            'computadora' => 'fa-desktop',
+            'laptop' => 'fa-laptop',
+            'monitor' => 'fa-tv',
+            'impresora' => 'fa-print',
+            'scanner' => 'fa-scanner',
+            'proyector' => 'fa-video',
+            'tablet' => 'fa-tablet-alt',
+            'telefono' => 'fa-phone',
+            'servidor' => 'fa-server',
+            'switch' => 'fa-network-wired',
+            'router' => 'fa-wifi',
+            'ups' => 'fa-battery-full',
+            'disco duro externo' => 'fa-hdd',
+            'teclado' => 'fa-keyboard',
+            'mouse' => 'fa-mouse',
+            'webcam' => 'fa-camera',
+            'microfono' => 'fa-microphone',
+            'parlantes' => 'fa-volume-up',
+            'otros' => 'fa-box'
+        ];
+        ?>
+        <?php foreach ($bienes_por_tipo as $tipo): ?>
+            <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                <div class="card stat-card shadow-sm">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">
+                            <i class="fas <?= $iconos[$tipo['tipo_bien']] ?? 'fa-box' ?> mr-2"></i>
+                            <?= ucfirst($tipo['tipo_bien']) ?>
+                        </span>
+                        <a href="<?= base_url('dashboard/exportarTipoBien/' . urlencode($tipo['tipo_bien'])) ?>" 
+                           class="export-btn">
+                            <i class="fas fa-file-excel"></i> Excel
+                        </a>
+                    </div>
+                    <div class="stat-card-body">
+                        <div class="stat-number"><?= number_format($tipo['total']) ?></div>
+                        <div class="text-muted small">
+                            <?php $pct = $total_bienes > 0 ? round(($tipo['total'] / $total_bienes) * 100, 1) : 0; ?>
+                            <?= $pct ?>% del total
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                No hay datos de bienes por tipo disponibles.
+            </div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <!-- Content Row -->
@@ -101,13 +296,15 @@
 
     <!-- Gráfico de Movimientos por Mes -->
     <div class="col-xl-8 col-lg-7">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Movimientos - Últimos 6 Meses</h6>
+        <div class="card stat-card shadow-sm">
+            <div class="stat-card-header">
+                <span class="stat-card-title">
+                    <i class="fas fa-chart-line mr-2"></i>Movimientos - Últimos 6 Meses
+                </span>
             </div>
-            <div class="card-body">
+            <div class="stat-card-body">
                 <?php if (!empty($movimientos_por_mes)): ?>
-                    <div class="chart-area" style="height: 300px;">
+                    <div class="chart-area" style="height: 280px;">
                         <canvas id="myAreaChart"></canvas>
                     </div>
                 <?php else: ?>
@@ -122,13 +319,15 @@
 
     <!-- Gráfico de Estado de Equipos -->
     <div class="col-xl-4 col-lg-5">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Estado de Equipos</h6>
+        <div class="card stat-card shadow-sm">
+            <div class="stat-card-header">
+                <span class="stat-card-title">
+                    <i class="fas fa-chart-pie mr-2"></i>Estado de Equipos
+                </span>
             </div>
-            <div class="card-body">
+            <div class="stat-card-body">
                 <?php if ($total_bienes > 0): ?>
-                    <div class="chart-pie pt-4 pb-2" style="height: 200px;">
+                    <div class="chart-pie pb-2" style="height: 200px;">
                         <canvas id="myPieChart"></canvas>
                     </div>
                     <div class="mt-4 text-center small">
@@ -164,11 +363,13 @@
 
     <!-- Últimos Movimientos -->
     <div class="col-xl-6 col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Últimos 5 Movimientos</h6>
+        <div class="card stat-card shadow-sm">
+            <div class="stat-card-header">
+                <span class="stat-card-title">
+                    <i class="fas fa-history mr-2"></i>Últimos 5 Movimientos
+                </span>
             </div>
-            <div class="card-body">
+            <div class="stat-card-body">
                 <?php if (!empty($ultimos_movimientos)): ?>
                     <div class="table-responsive">
                         <table class="table table-sm table-hover">
@@ -210,25 +411,27 @@
 
     <!-- Top Usuarios -->
     <div class="col-xl-6 col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Top 5 - Usuarios con Más Equipos</h6>
+        <div class="card stat-card shadow-sm">
+            <div class="stat-card-header">
+                <span class="stat-card-title">
+                    <i class="fas fa-trophy mr-2"></i>Top 5 - Usuarios con Más Equipos
+                </span>
             </div>
-            <div class="card-body">
+            <div class="stat-card-body">
                 <?php if (!empty($top_usuarios)): ?>
                     <?php foreach ($top_usuarios as $usuario): ?>
                         <div class="mb-3">
-                            <div class="small text-gray-700 mb-1">
-                                <strong><?= strtoupper($usuario['nombre'] . ' ' . $usuario['ape_paterno'] . ' ' . $usuario['ape_materno']) ?></strong>
+                            <div class="small text-gray-700 mb-1 font-weight-600">
+                                <?= strtoupper($usuario['nombre'] . ' ' . $usuario['ape_paterno'] . ' ' . $usuario['ape_materno']) ?>
                             </div>
-                            <div class="progress">
+                            <div class="progress" style="height: 8px; border-radius: 4px;">
                                 <?php $max = isset($top_usuarios[0]['total_equipos']) ? $top_usuarios[0]['total_equipos'] : 1; ?>
                                 <?php $porcentaje_usuario = round(($usuario['total_equipos'] / $max) * 100); ?>
-                                <div class="progress-bar bg-info" role="progressbar" style="width: <?= $porcentaje_usuario ?>%"
-                                    aria-valuenow="<?= $porcentaje_usuario ?>" aria-valuemin="0" aria-valuemax="100">
-                                    <?= $usuario['total_equipos'] ?> equipo<?= $usuario['total_equipos'] > 1 ? 's' : '' ?>
+                                <div class="progress-bar" style="width: <?= $porcentaje_usuario ?>%; background: linear-gradient(135deg, #c41e3a 0%, #8B1538 100%);" 
+                                    role="progressbar" aria-valuenow="<?= $porcentaje_usuario ?>" aria-valuemin="0" aria-valuemax="100">
                                 </div>
                             </div>
+                            <small class="text-muted"><?= $usuario['total_equipos'] ?> equipo<?= $usuario['total_equipos'] > 1 ? 's' : '' ?></small>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -243,9 +446,16 @@
 </div>
 
 <?= $this->section('scripts') ?>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    <?php if (!empty($movimientos_por_mes)): ?>
+    // Esperar a que Chart.js esté completamente cargado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configuración global de Chart.js para prevenir conflictos
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.responsive = true;
+            Chart.defaults.maintainAspectRatio = false;
+        }
+        
+        <?php if (!empty($movimientos_por_mes)): ?>
         // Gráfico de Líneas - Movimientos por Mes
         const movimientosPorMes = <?= json_encode($movimientos_por_mes) ?>;
         const labels = Object.keys(movimientosPorMes).map(k => movimientosPorMes[k].label);
@@ -256,7 +466,13 @@
 
         const ctxLine = document.getElementById('myAreaChart');
         if (ctxLine) {
-            const myAreaChart = new Chart(ctxLine.getContext('2d'), {
+            // Limpiar canvas completamente
+            const canvasParent = ctxLine.parentNode;
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'myAreaChart';
+            canvasParent.replaceChild(newCanvas, ctxLine);
+            
+            window.myAreaChart = new Chart(newCanvas.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -332,6 +548,7 @@
                             }
                         },
                         tooltip: {
+                            enabled: true,
                             mode: 'index',
                             intersect: false,
                             backgroundColor: 'rgba(0,0,0,0.8)',
@@ -379,6 +596,14 @@
                         line: {
                             borderJoinStyle: 'round'
                         }
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false,
+                        animationDuration: 0
+                    },
+                    animation: {
+                        duration: 750
                     }
                 }
             });
@@ -404,7 +629,13 @@
 
         const ctxPie = document.getElementById('myPieChart');
         if (ctxPie) {
-            const myPieChart = new Chart(ctxPie.getContext('2d'), {
+            // Limpiar canvas completamente
+            const canvasParent = ctxPie.parentNode;
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'myPieChart';
+            canvasParent.replaceChild(newCanvas, ctxPie);
+            
+            window.myPieChart = new Chart(newCanvas.getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: estadosLabels,
@@ -424,6 +655,7 @@
                             display: false
                         },
                         tooltip: {
+                            enabled: true,
                             callbacks: {
                                 label: function (context) {
                                     let label = context.label || '';
@@ -434,11 +666,19 @@
                                 }
                             }
                         }
+                    },
+                    hover: {
+                        animationDuration: 0
+                    },
+                    animation: {
+                        duration: 750
                     }
                 }
             });
         }
     <?php endif; ?>
+    
+    }); // Fin DOMContentLoaded
 </script>
 <?= $this->endSection() ?>
 

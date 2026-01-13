@@ -16,6 +16,7 @@ class BienesModel extends Model
         'id',
         'cod_patrimonial',
         'descripcion',
+        'tipo_bien',
         'marca',
         'modelo',
         'serie',
