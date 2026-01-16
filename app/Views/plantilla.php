@@ -442,6 +442,22 @@
                 </a>
             </li>
 
+            <!-- Nav Item - Backup -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('backup'); ?>">
+                    <i class="fas fa-database"></i>
+                    <span>Backup</span>
+                </a>
+            </li>
+
+            <!-- Nav Item - Sesiones Activas -->
+            <li class="nav-item">
+                <a class="nav-link" href="<?= base_url('sesiones'); ?>">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Sesiones Activas</span>
+                </a>
+            </li>
+
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
 
@@ -699,8 +715,9 @@
     <!-- Cargar otros scripts de plugins -->
     <script src="<?= base_url("./sb2/vendor/jquery-easing/jquery.easing.min.js") ?>"></script>
     <script src="<?= base_url("./sb2/js/sb-admin-2.min.js") ?>"></script>
-    <!-- Chart.js se cargará solo en páginas que lo necesiten -->
-    <!-- <script src="<?= base_url("./sb2/vendor/chart.js/Chart.min.js") ?>"></script> -->
+    
+    <!-- Chart.js para gráficas del dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
     <!-- Scripts de Select2 -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

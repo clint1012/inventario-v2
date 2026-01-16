@@ -5,6 +5,7 @@ use App\Models\IpModel;
 use App\Models\BienesModel;
 use App\Models\PersonasModel;    // Requerido para listas
 use App\Models\DepartamentosModel; // Requerido para listas
+use App\Models\AuditoriaModel;
 
 class IpController extends BaseController
 {
@@ -107,6 +108,14 @@ class IpController extends BaseController
         
         // 3. Actualizar
         $this->ipModel->update($id, $datosActualizar);
+        
+        // Registrar auditoría
+        $ip = $this->ipModel->find($id);
+        AuditoriaModel::registrar('EDITAR', 'IPs', $id, [
+            'direccion_ip' => $ip['direccion_ip'] ?? '',
+            'estado' => $datosActualizar['estado'],
+            'asignado_a' => $id_persona ? 'Persona' : ($id_departamento ? 'Departamento' : ($bien_id ? 'Bien' : 'Ninguno'))
+        ]);
 
         return redirect()->to('/ip')->with('mensaje', 'Asignación de IP actualizada correctamente.');
     }

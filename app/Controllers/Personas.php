@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\PersonasModel;
 use App\Models\RegimenLaboralModel;
 use App\Models\LocalesModel;
+use App\Models\AuditoriaModel;
 
 class Personas extends BaseController
 {
@@ -102,7 +103,7 @@ class Personas extends BaseController
         ]);
 
         $personasModel = new PersonasModel();
-        $personasModel->insert([
+        $persona_id = $personasModel->insert([
             'dni' => trim($post['dni']),
             'nombre' => trim($post['nombre']),
             'ape_paterno' => trim($post['ape_paterno']),
@@ -117,6 +118,13 @@ class Personas extends BaseController
             'id_locales' => $post['id_locales']
 
         ]);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('CREAR', 'Personas', $persona_id, [
+            'dni' => $post['dni'],
+            'nombre_completo' => trim($post['nombre']) . ' ' . trim($post['ape_paterno']) . ' ' . trim($post['ape_materno'])
+        ]);
+        
         return redirect()->to(base_url('personas'))->with('success', 'Persona creada correctamente');
 
     }
@@ -182,6 +190,12 @@ class Personas extends BaseController
         ]);
 
         $personasModel->update($id, $post);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('EDITAR', 'Personas', $id, [
+            'dni' => $post['dni'],
+            'nombre_completo' => $post['nombre'] . ' ' . $post['ape_paterno'] . ' ' . $post['ape_materno']
+        ]);
 
         return redirect()->to('personas')->with('success', 'Datos actualizados correctamente');
     }
@@ -234,6 +248,13 @@ class Personas extends BaseController
 
         try {
             $personasModel->update($id, $data);
+            
+            // Registrar auditoría
+            $persona = $personasModel->find($id);
+            AuditoriaModel::registrar('DESACTIVAR', 'Personas', $id, [
+                'motivo' => $motivo,
+                'nombre_completo' => ($persona['nombre'] ?? '') . ' ' . ($persona['ape_paterno'] ?? '')
+            ]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Error al actualizar: ' . $e->getMessage()]);
         }
@@ -279,6 +300,11 @@ class Personas extends BaseController
 
         try {
             $personasModel->update($id, $data);
+            
+            // Registrar auditoría
+            AuditoriaModel::registrar('ACTIVAR', 'Personas', $id, [
+                'nombre_completo' => ($person['nombre'] ?? '') . ' ' . ($person['ape_paterno'] ?? '')
+            ]);
         } catch (\Exception $e) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Error al actualizar: ' . $e->getMessage()]);
         }

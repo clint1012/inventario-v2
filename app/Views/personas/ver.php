@@ -5,7 +5,12 @@
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h4 class="mb-0">👤 Detalles de la Persona</h4>
-            <a href="<?= base_url('personas') ?>" class="btn btn-light btn-sm">← Volver</a>
+            <div>
+                <a href="<?= base_url('auditoria/historial/Personas/' . $persona['id']) ?>" class="btn btn-info btn-sm" title="Ver historial de cambios">
+                    <i class="fas fa-history"></i> Historial
+                </a>
+                <a href="<?= base_url('personas') ?>" class="btn btn-light btn-sm">← Volver</a>
+            </div>
         </div>
 
         <div class="card-body">

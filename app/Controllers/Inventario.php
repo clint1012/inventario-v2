@@ -9,6 +9,7 @@ use App\Models\BienesModel;
 use App\Models\DepartamentosModel;
 use App\Models\InventarioModel;
 use App\Models\InventarioDetalleModel;
+use App\Models\AuditoriaModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -98,17 +99,30 @@ class Inventario extends BaseController
 
         $detalleRows = [];
         foreach ($equipos as $bienId => $data) {
-            $detalleRows[] = [
-                'inventario_id' => $inventarioId,
-                'bien_id' => $bienId,
-                'verificado' => isset($data['verificado']) ? 1 : 0,
-                'comentario' => $data['comentario'] ?? null,
-            ];
+            // Solo guardar si el bien fue verificado (marcado "Sí")
+            if (isset($data['verificado']) && $data['verificado'] == '1') {
+                $detalleRows[] = [
+                    'inventario_id' => $inventarioId,
+                    'bien_id' => $bienId,
+                    'verificado' => 1,
+                    'comentario' => $data['comentario'] ?? null,
+                    'condicion' => $data['condicion'] ?? null,
+                ];
+            }
         }
 
         if ($detalleRows) {
             $this->detalles->insertBatch($detalleRows);
         }
+        
+        // Registrar auditoría
+        $usuario = $this->personas->find($usuarioId);
+        AuditoriaModel::registrar('CREAR', 'Inventario', $inventarioId, [
+            'anio' => $anio,
+            'mes' => $mes,
+            'usuario' => $usuario['nombre_completo'] ?? '',
+            'total_equipos' => count($equipos)
+        ]);
 
         return redirect()->back()->with('success', 'Inventario registrado.');
     }
@@ -133,6 +147,12 @@ class Inventario extends BaseController
         }
 
         $this->bienes->update($bienId, ['id_personas' => 255]);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('LIBERAR', 'Inventario', $bienId, [
+            'cod_patrimonial' => $bien['cod_patrimonial'] ?? '',
+            'usuario_id' => $usuarioId
+        ]);
 
         return $this->response->setJSON(['message' => 'Bien liberado correctamente.']);
     }
@@ -159,9 +179,32 @@ class Inventario extends BaseController
             return $this->response->setStatusCode(404)->setJSON(['message' => 'Bien no encontrado.']);
         }
 
+        $advertencia = null;
+        $anteriorId = (int) $bien['id_personas'];
+        if ($anteriorId > 0 && $anteriorId !== $usuarioId && $anteriorId !== 255) {
+            // El bien estaba asignado a otra persona
+            $personaAnterior = $this->personas->find($anteriorId);
+            $advertencia = 'El bien estaba asignado a ' . ($personaAnterior['nombre_completo'] ?? 'otro usuario') . '. Se ha reasignado.';
+            // Registrar auditoría de liberación
+            AuditoriaModel::registrar('LIBERAR', 'Inventario', $bien['id'], [
+                'cod_patrimonial' => $bien['cod_patrimonial'] ?? '',
+                'usuario_id' => $anteriorId
+            ]);
+        }
+
         $this->bienes->update($bien['id'], ['id_personas' => $usuarioId]);
 
-        return $this->response->setJSON(['message' => 'Bien asignado correctamente.']);
+        // Registrar auditoría de asignación
+        AuditoriaModel::registrar('ASIGNAR', 'Inventario', $bien['id'], [
+            'cod_patrimonial' => $bien['cod_patrimonial'] ?? '',
+            'usuario_id' => $usuarioId
+        ]);
+
+        $msg = 'Bien asignado correctamente.';
+        if ($advertencia) {
+            $msg .= ' ' . $advertencia;
+        }
+        return $this->response->setJSON(['message' => $msg]);
     }
 
     public function listado()
@@ -192,66 +235,6 @@ class Inventario extends BaseController
         ]);
     }
 
-    public function exportarPdf()
-    {
-        $busqueda = trim($this->request->getGet('busqueda') ?? '');
-        $anio = $this->request->getGet('anio');
-        $mes = $this->request->getGet('mes');
-
-        $query = $this->inventarios
-            ->select('inventarios.*, personas.nombre_completo AS usuario, regimen_laboral.regimen_laboral AS regimen, jefe.nombre_completo AS jefe')
-            ->join('personas', 'personas.id = inventarios.usuario_id', 'left')
-            ->join('regimen_laboral', 'regimen_laboral.id = personas.id_regimen_laboral', 'left')
-            ->join('personas AS jefe', 'jefe.id = inventarios.jefe_id', 'left');
-
-        if ($anio) {
-            $query->where('inventarios.anio', $anio);
-        }
-        if ($mes) {
-            $query->where('inventarios.mes', $mes);
-        }
-        if ($busqueda) {
-            $query->like('personas.nombre_completo', $busqueda, 'both');
-        }
-
-        $inventarios = $query->orderBy('anio', 'DESC')->findAll();
-
-        if (empty($inventarios)) {
-            return redirect()->back()->with('error', 'No hay inventarios que coincidan con los filtros aplicados.');
-        }
-
-        $inventarioIds = array_column($inventarios, 'id');
-
-        $detalles = $this->detalles
-            ->select('inventario_detalles.*, bienes.cod_patrimonial, bienes.descripcion, bienes.marca, bienes.serie, locales.nombre AS local, departamentos.nombre AS departamento')
-            ->join('bienes', 'bienes.id = inventario_detalles.bien_id', 'left')
-            ->join('locales', 'locales.id = bienes.id_locales', 'left')
-            ->join('departamentos', 'departamentos.id = bienes.id_departamento', 'left')
-            ->whereIn('inventario_detalles.inventario_id', $inventarioIds)
-            ->findAll();
-
-        $detallesPorInventario = [];
-        foreach ($detalles as $detalle) {
-            $detallesPorInventario[$detalle['inventario_id']][] = $detalle;
-        }
-
-        $html = view('inventario/listado_pdf', [
-            'inventarios' => $inventarios,
-            'detalles' => $detallesPorInventario,
-        ]);
-
-        $snappy = new \Knp\Snappy\Pdf('C:\ARCHIV~1\wkhtmltopdf\bin\wkhtmltopdf.exe');
-        $snappy->setOption('encoding', 'UTF-8');
-        $snappy->setOption('enable-local-file-access', true);
-        $snappy->setOption('page-size', 'A4');
-        $snappy->setOption('margin-top', 10);
-        $snappy->setOption('margin-bottom', 10);
-
-        return $this->response
-            ->setContentType('application/pdf')
-            ->setHeader('Content-Disposition', 'inline; filename="inventario_' . date('Ymd_His') . '.pdf"')
-            ->setBody($snappy->getOutputFromHtml($html));
-    }
 
     public function exportarExcel()
     {
@@ -455,15 +438,18 @@ class Inventario extends BaseController
         // Eliminar detalles existentes
         $this->detalles->where('inventario_id', $id)->delete();
 
-        // Insertar nuevos detalles
+        // Insertar nuevos detalles SOLO si están verificados
         $detalleRows = [];
         foreach ($equipos as $bienId => $data) {
-            $detalleRows[] = [
-                'inventario_id' => $id,
-                'bien_id' => $bienId,
-                'verificado' => isset($data['verificado']) ? 1 : 0,
-                'comentario' => $data['comentario'] ?? null,
-            ];
+            if (isset($data['verificado']) && $data['verificado'] == '1') {
+                $detalleRows[] = [
+                    'inventario_id' => $id,
+                    'bien_id' => $bienId,
+                    'verificado' => 1,
+                    'comentario' => $data['comentario'] ?? null,
+                    'condicion' => $data['condicion'] ?? null,
+                ];
+            }
         }
 
         if ($detalleRows) {

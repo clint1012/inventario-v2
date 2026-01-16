@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ProveedorModel;
+use App\Models\AuditoriaModel;
 use Mpdf\Mpdf;
 
 class ProveedorController extends BaseController
@@ -55,7 +56,14 @@ class ProveedorController extends BaseController
             $ficha->move('uploads/proveedores', $data['ficha_ruc']);
         }
 
-        $this->model->insert($data);
+        $proveedor_id = $this->model->insert($data);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('CREAR', 'Proveedores', $proveedor_id, [
+            'razon_social' => $data['razon_social'] ?? '',
+            'ruc' => $data['ruc'] ?? ''
+        ]);
+        
         return redirect()->to(base_url('proveedor'))->with('success', 'Proveedor creado correctamente');
     }
 
@@ -64,13 +72,28 @@ class ProveedorController extends BaseController
     {
         $data = $this->request->getRawInput();
         $this->model->update($id, $data);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('EDITAR', 'Proveedores', $id, [
+            'razon_social' => $data['razon_social'] ?? '',
+            'ruc' => $data['ruc'] ?? ''
+        ]);
+        
         return $this->response->setJSON(['status' => 'ok', 'message' => 'Proveedor actualizado']);
     }
 
     // DELETE /proveedores/:id → eliminar
     public function delete($id = null)
     {
+        $proveedor = $this->model->find($id);
         $this->model->delete($id);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('ELIMINAR', 'Proveedores', $id, [
+            'razon_social' => $proveedor['razon_social'] ?? '',
+            'ruc' => $proveedor['ruc'] ?? ''
+        ]);
+        
         return $this->response->setJSON(['status' => 'ok', 'message' => 'Proveedor eliminado']);
     }
 

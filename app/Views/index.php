@@ -167,7 +167,7 @@
 
 <div class="row">
     <!-- Total Equipos -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
         <div class="card stat-card shadow">
             <div class="stat-card-body">
                 <div class="stat-icon" style="background: rgba(220, 38, 38, 0.1);">
@@ -180,7 +180,7 @@
     </div>
 
     <!-- Equipos Activos -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
         <div class="card stat-card shadow">
             <div class="stat-card-body">
                 <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1);">
@@ -193,7 +193,7 @@
     </div>
 
     <!-- En Mantenimiento -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
         <div class="card stat-card shadow">
             <div class="stat-card-body">
                 <div class="stat-icon" style="background: rgba(251, 191, 36, 0.1);">
@@ -206,7 +206,7 @@
     </div>
 
     <!-- Equipos Asignados -->
-    <div class="col-xl-3 col-md-6 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
         <div class="card stat-card shadow">
             <div class="stat-card-body">
                 <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1);">
@@ -222,7 +222,156 @@
             </div>
         </div>
     </div>
+
+    <!-- Total Personas -->
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1);">
+                    <i class="fas fa-users" style="color: #8b5cf6;"></i>
+                </div>
+                <div class="stat-number"><?= number_format($total_personas ?? 0) ?></div>
+                <div class="text-muted small font-weight-600">Personas Activas</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Licencias -->
+    <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+        <div class="card stat-card shadow">
+            <div class="stat-card-body">
+                <div class="stat-icon" style="background: rgba(236, 72, 153, 0.1);">
+                    <i class="fas fa-key" style="color: #ec4899;"></i>
+                </div>
+                <div class="stat-number"><?= number_format($licencias_activas ?? 0) ?></div>
+                <div class="text-muted small font-weight-600">Licencias Activas</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ALERTAS - Licencias y Préstamos por Vencer -->
+<?php if (!empty($licencias_por_vencer) || !empty($prestamos_por_vencer)): ?>
+<div class="row mb-4">
+    <div class="col-12">
+        <h5 class="section-title">
+            <i class="fas fa-exclamation-triangle mr-2 text-warning"></i>Alertas y Notificaciones
+        </h5>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Alertas de Licencias por Vencer -->
+    <?php if (!empty($licencias_por_vencer)): ?>
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow border-left-warning">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-key mr-2"></i>Licencias por Vencer (30 días)
+                </h6>
+                <span class="badge badge-warning badge-pill"><?= count($licencias_por_vencer) ?></span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Licencia</th>
+                                <th>Tipo</th>
+                                <th>Vencimiento</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($licencias_por_vencer as $lic): ?>
+                            <tr>
+                                <td>
+                                    <a href="<?= base_url('licencias') ?>" class="text-primary font-weight-bold">
+                                        <?= esc($lic['nombre']) ?>
+                                    </a>
+                                </td>
+                                <td><small><?= esc($lic['tipo']) ?></small></td>
+                                <td>
+                                    <small><?= date('d/m/Y', strtotime($lic['fecha_vencimiento'])) ?></small>
+                                </td>
+                                <td>
+                                    <?php 
+                                        $dias = (int)$lic['dias_restantes'];
+                                        $badgeClass = 'badge-success';
+                                        if ($dias <= 7) $badgeClass = 'badge-danger';
+                                        elseif ($dias <= 15) $badgeClass = 'badge-warning';
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>">
+                                        <?= $dias ?> día<?= $dias != 1 ? 's' : '' ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Alertas de Préstamos por Vencer -->
+    <?php if (!empty($prestamos_por_vencer)): ?>
+    <div class="col-xl-6 col-lg-12 mb-4">
+        <div class="card shadow border-left-info">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-handshake mr-2"></i>Préstamos por Vencer (7 días)
+                </h6>
+                <span class="badge badge-info badge-pill"><?= count($prestamos_por_vencer) ?></span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Bienes</th>
+                                <th>Devolución</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($prestamos_por_vencer as $pres): ?>
+                            <tr>
+                                <td>
+                                    <a href="<?= base_url('movimientos') ?>" class="text-primary font-weight-bold">
+                                        <?= strtoupper(esc($pres['nombre']) . ' ' . esc($pres['ape_paterno'])) ?>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary"><?= $pres['total_bienes'] ?></span>
+                                </td>
+                                <td>
+                                    <small><?= date('d/m/Y', strtotime($pres['fecha_devolucion_estimada'])) ?></small>
+                                </td>
+                                <td>
+                                    <?php 
+                                        $dias = (int)$pres['dias_restantes'];
+                                        $badgeClass = 'badge-success';
+                                        if ($dias <= 2) $badgeClass = 'badge-danger';
+                                        elseif ($dias <= 5) $badgeClass = 'badge-warning';
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>">
+                                        <?= $dias ?> día<?= $dias != 1 ? 's' : '' ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <!-- Estadísticas por Tipo de Bien -->
 <div class="row mb-4">

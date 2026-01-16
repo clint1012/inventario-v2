@@ -6,6 +6,7 @@ use App\Config\AppConstants;
 use App\Models\BienesModel;
 use App\Models\AsignacionModel;
 use App\Models\PersonasModel;
+use App\Models\LicenciasModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class Dashboard extends BaseController
@@ -13,12 +14,14 @@ class Dashboard extends BaseController
     private BienesModel $bienesModel;
     private AsignacionModel $movimientosModel;
     private PersonasModel $personasModel;
+    private LicenciasModel $licenciasModel;
 
     public function __construct()
     {
         $this->bienesModel = new BienesModel();
         $this->movimientosModel = new AsignacionModel();
         $this->personasModel = new PersonasModel();
+        $this->licenciasModel = new LicenciasModel();
     }
 
     public function index(): string
@@ -52,6 +55,17 @@ class Dashboard extends BaseController
 
         // Top usuarios con más equipos
         $data['top_usuarios'] = $this->getTopUsuarios();
+
+        // Alertas - Licencias por vencer (próximos 30 días)
+        $data['licencias_por_vencer'] = $this->getLicenciasPorVencer();
+
+        // Alertas - Préstamos por vencer (próximos 7 días)
+        $data['prestamos_por_vencer'] = $this->getPrestamosPorVencer();
+
+        // Estadísticas adicionales
+        $data['total_personas'] = $this->personasModel->where('estado', 1)->countAllResults();
+        $data['total_licencias'] = $this->licenciasModel->countAll();
+        $data['licencias_activas'] = $this->licenciasModel->where('estado', 'ACTIVO')->countAllResults();
 
         return view('index', $data);
     }
@@ -289,5 +303,50 @@ class Dashboard extends BaseController
         foreach (range('A', 'I') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
+    }
+    
+    /**
+     * Obtener licencias que vencen en los pr�ximos 30 d�as
+     */
+    private function getLicenciasPorVencer(): array
+    {
+        $db = \Config\Database::connect();
+        
+        return $db->table('licencias')
+            ->select('id, nombre_software as nombre, tipo_licencia as tipo, fecha_expiracion as fecha_vencimiento, DATEDIFF(fecha_expiracion, NOW()) as dias_restantes')
+            ->where('estado', 'ACTIVO')
+            ->where('fecha_expiracion IS NOT NULL')
+            ->where('fecha_expiracion >=', date('Y-m-d'))
+            ->where('fecha_expiracion <=', date('Y-m-d', strtotime('+30 days')))
+            ->orderBy('fecha_expiracion', 'ASC')
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Obtener pr�stamos que vencen en los pr�ximos 7 d�as
+     */
+    private function getPrestamosPorVencer(): array
+    {
+        $db = \Config\Database::connect();
+        
+        return $db->table('movimientos m')
+            ->select('m.id, m.lote as codigo, m.fecha_limite_prestamo as fecha_devolucion_estimada, 
+                      p.nombre, p.ape_paterno, p.ape_materno,
+                      DATEDIFF(m.fecha_limite_prestamo, NOW()) as dias_restantes,
+                      COUNT(m.id) as total_bienes')
+            ->join('personas p', 'p.id = m.id_personas', 'left')
+            ->where('m.tipo_movimiento', 'PRESTAMO')
+            ->where('m.anulado', 0)
+            ->where('m.fecha_limite_prestamo IS NOT NULL')
+            ->where('m.fecha_limite_prestamo !=', '0000-00-00')
+            ->where('m.fecha_limite_prestamo >=', date('Y-m-d'))
+            ->where('m.fecha_limite_prestamo <=', date('Y-m-d', strtotime('+7 days')))
+            ->groupBy('m.lote, p.nombre, p.ape_paterno, p.ape_materno, m.fecha_limite_prestamo')
+            ->orderBy('m.fecha_limite_prestamo', 'ASC')
+            ->limit(10)
+            ->get()
+            ->getResultArray();
     }
 }

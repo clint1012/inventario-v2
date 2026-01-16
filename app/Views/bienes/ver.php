@@ -42,6 +42,9 @@
         <p class="text-muted mb-0 small">Código: <strong><?= $bien['cod_patrimonial'] ?></strong></p>
     </div>
     <div>
+        <a href="<?= base_url('auditoria/historial/Bienes/' . $bien['id']) ?>" class="btn btn-sm btn-info" title="Ver historial de cambios">
+            <i class="fas fa-history"></i> Ver Historial
+        </a>
         <a href="<?= base_url('bienes/' . $bien['id'] . '/edit') ?>" class="btn btn-sm btn-warning">
             <i class="fas fa-edit"></i> Editar
         </a>

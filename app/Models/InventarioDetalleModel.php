@@ -10,6 +10,6 @@ class InventarioDetalleModel extends Model
     protected $table      = 'inventario_detalles';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
-    protected $allowedFields = ['inventario_id','bien_id','verificado','comentario'];
+    protected $allowedFields = ['inventario_id','bien_id','verificado','comentario','condicion'];
     public $timestamps = false;
 }

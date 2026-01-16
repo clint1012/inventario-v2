@@ -170,6 +170,9 @@
                     data: null,
                     render: function (data) {
                         return `
+                        <a href="<?= base_url('auditoria/historial/Licencias/') ?>${data.id}" class="btn btn-sm btn-secondary" title="Ver historial">
+                            <i class="fas fa-history"></i>
+                        </a>
                         <button class="btn btn-sm btn-info btnEditar" data-id="${data.id}"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-sm btn-danger btnEliminar" data-id="${data.id}"><i class="fas fa-trash"></i></button>
                     `;

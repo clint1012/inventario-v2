@@ -8,6 +8,7 @@ use App\Models\MovimientosCelularesModel;
 use App\Models\PersonasModel;
 use App\Models\DepartamentosModel;
 use App\Models\LocalesModel;
+use App\Models\AuditoriaModel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -47,9 +48,15 @@ class Celulares extends BaseController
             'estado' => 'disponible'
         ];
 
-        if (!$this->celularesModel->insert($data)) {
+        if (!$celular_id = $this->celularesModel->insert($data)) {
             return redirect()->back()->with('error', 'Error al registrar celular')->withInput();
         }
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('CREAR', 'Celulares', $celular_id, [
+            'imei' => $data['imei'],
+            'modelo' => $data['modelo']
+        ]);
 
         return redirect()->to(base_url('celulares'))->with('success', 'Celular registrado correctamente');
     }
@@ -77,6 +84,12 @@ class Celulares extends BaseController
         if (!$this->celularesModel->update($id, $data)) {
             return redirect()->back()->with('error', 'Error al actualizar celular')->withInput();
         }
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('EDITAR', 'Celulares', $id, [
+            'imei' => $data['imei'],
+            'modelo' => $data['modelo']
+        ]);
 
         return redirect()->to(base_url('celulares'))->with('success', 'Celular actualizado correctamente');
     }
@@ -84,9 +97,17 @@ class Celulares extends BaseController
     // 📱 Dar de baja un celular
     public function bajaCelular($id)
     {
+        $celular = $this->celularesModel->find($id);
         if (!$this->celularesModel->update($id, ['estado' => 'baja'])) {
             return redirect()->back()->with('error', 'Error al dar de baja el celular');
         }
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('BAJA', 'Celulares', $id, [
+            'imei' => $celular['imei'] ?? '',
+            'modelo' => $celular['modelo'] ?? ''
+        ]);
+        
         return redirect()->to(base_url('celulares'))->with('success', 'Celular dado de baja');
     }
 
@@ -180,6 +201,18 @@ class Celulares extends BaseController
                 $this->celularesModel->update($idCelular, ['estado' => 'disponible']);
             }
         }
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar(
+            $tipo === 'entrega' ? 'ENTREGA' : 'DEVOLUCION',
+            'Celulares',
+            null,
+            [
+                'lote' => $lote,
+                'tipo' => $tipo,
+                'cantidad_celulares' => count($celulares ?? [])
+            ]
+        );
 
         return redirect()->to(base_url('celulares/movimientos'))
             ->with('success', 'Movimiento registrado correctamente')
@@ -212,6 +245,13 @@ class Celulares extends BaseController
                 $this->celularesModel->update($mov['id_celular'], ['estado' => 'asignado']);
             }
         }
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('ANULAR', 'Celulares', null, [
+            'lote' => $lote,
+            'motivo' => $motivo,
+            'cantidad_movimientos' => count($movimientos)
+        ]);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Movimiento anulado correctamente']);
     }

@@ -97,6 +97,40 @@ $routes->get('celulares/editar/(:num)', 'Celulares::editarCelular/$1', ['filter'
 $routes->post('celulares/actualizar/(:num)', 'Celulares::actualizarCelular/$1', ['filter' => 'auth']);
 $routes->get('celulares/baja/(:num)', 'Celulares::bajaCelular/$1', ['filter' => 'auth']);
 
+// ======================================================
+//  Backup — Sistema de respaldo de base de datos
+// ======================================================
+$routes->get('backup', 'Backup::index', ['filter' => 'auth']);
+$routes->post('backup/crear', 'Backup::crear', ['filter' => 'auth']);
+$routes->get('backup/descargar/(:segment)', 'Backup::descargar/$1', ['filter' => 'auth']);
+$routes->post('backup/eliminar', 'Backup::eliminar', ['filter' => 'auth']);
+$routes->post('backup/restaurar', 'Backup::restaurar', ['filter' => 'auth']);
+$routes->post('backup/limpiarAntiguos', 'Backup::limpiarAntiguos', ['filter' => 'auth']);
+
+// ======================================================
+//  Notificaciones — Sistema de emails automáticos
+// ======================================================
+$routes->get('notificaciones/probar-email', 'Notificaciones::probarEmail', ['filter' => 'auth']);
+$routes->post('notificaciones/ejecutar', 'Notificaciones::ejecutarTodas', ['filter' => 'auth']);
+$routes->post('notificaciones/licencias', 'Notificaciones::enviarLicenciasVencer', ['filter' => 'auth']);
+$routes->post('notificaciones/prestamos', 'Notificaciones::enviarPrestamosVencer', ['filter' => 'auth']);
+
+// ======================================================
+//  Auditoría — Historial de cambios
+// ======================================================
+$routes->get('auditoria/historial/(:segment)/(:num)', 'Auditoria::historial/$1/$2', ['filter' => 'auth']);
+
+// ======================================================
+//  Sesiones — Gestión de sesiones activas
+// ======================================================
+$routes->get('sesiones', 'Sesiones::index', ['filter' => 'auth']);
+$routes->get('sesiones/historial', 'Sesiones::historial', ['filter' => 'auth']);
+$routes->get('sesiones/listarSesiones', 'Sesiones::listarSesiones', ['filter' => 'auth']);
+$routes->get('sesiones/listarHistorial', 'Sesiones::listarHistorial', ['filter' => 'auth']);
+$routes->post('sesiones/cerrarSesion', 'Sesiones::cerrarSesion', ['filter' => 'auth']);
+$routes->post('sesiones/cerrarSesionesUsuario', 'Sesiones::cerrarSesionesUsuario', ['filter' => 'auth']);
+$routes->get('sesiones/estadisticas', 'Sesiones::estadisticas', ['filter' => 'auth']);
+
 // Movimientos de celulares
 $routes->get('celulares/movimientos', 'Celulares::movimientos', ['filter' => 'auth']);
 $routes->get('celulares/movimientos/nuevo', 'Celulares::nuevoMovimiento', ['filter' => 'auth']);
@@ -108,6 +142,7 @@ $routes->get('celulares/movimientos/pdf/(:segment)', 'Celulares::descargarPDF/$1
 
 // ======================================================
 // Bienes extras
+$routes->get('bienes/getPorIdUsuario', 'Bienes::getPorIdUsuario', ['filter' => 'auth']);
 // ======================================================
 $routes->get('bienes/descargarPlantillaCSV', 'Bienes::descargarPlantillaCSV', ['filter' => 'auth']);
 $routes->post('bienes/subida_masiva', 'Bienes::subida_masiva', ['filter' => 'auth']);

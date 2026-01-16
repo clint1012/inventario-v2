@@ -826,7 +826,7 @@
             params.fecha_adquisicion = $('#filtro_fecha').val() || '';
             params.estado_garantia = $('#filtro_garantia').val() || '';
 
-            // 5. DEBUG: Ver parámetros en consola
+            // ...existing code...
             console.log('Params enviados:', params);
 
             // 6. Generar URL y descargar

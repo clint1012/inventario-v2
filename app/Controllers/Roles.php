@@ -3,6 +3,7 @@
 use App\Models\RolesModel;
 use App\Models\PermisosModel;
 use App\Models\RolesPermisosModel;
+use App\Models\AuditoriaModel;
 
 class Roles extends BaseController
 {
@@ -27,7 +28,14 @@ class Roles extends BaseController
     public function store()
     {
         $post = $this->request->getPost();
-        $this->rolesModel->insert(['nombre'=>$post['nombre'],'descripcion'=>$post['descripcion']]);
+        $rol_id = $this->rolesModel->insert(['nombre'=>$post['nombre'],'descripcion'=>$post['descripcion']]);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('CREAR', 'Roles', $rol_id, [
+            'nombre' => $post['nombre'],
+            'descripcion' => $post['descripcion']
+        ]);
+        
         return redirect()->to('/roles')->with('success','Rol creado');
     }
 
@@ -35,12 +43,26 @@ class Roles extends BaseController
     {
         $post = $this->request->getPost();
         $this->rolesModel->update($id, ['nombre'=>$post['nombre'],'descripcion'=>$post['descripcion']]);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('EDITAR', 'Roles', $id, [
+            'nombre' => $post['nombre'],
+            'descripcion' => $post['descripcion']
+        ]);
+        
         return redirect()->to('/roles')->with('success','Rol actualizado');
     }
 
     public function delete($id)
     {
+        $rol = $this->rolesModel->find($id);
         $this->rolesModel->delete($id);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('ELIMINAR', 'Roles', $id, [
+            'nombre' => $rol['nombre'] ?? ''
+        ]);
+        
         return redirect()->to('/roles')->with('success','Rol eliminado');
     }
 
@@ -51,6 +73,14 @@ class Roles extends BaseController
         foreach ($permisos as $p) {
             $this->rolesPermisos->insert(['rol_id'=>$id, 'permiso_id'=>$p]);
         }
+        
+        // Registrar auditoría
+        $rol = $this->rolesModel->find($id);
+        AuditoriaModel::registrar('ASIGNAR_PERMISOS', 'Roles', $id, [
+            'rol' => $rol['nombre'] ?? '',
+            'cantidad_permisos' => count($permisos)
+        ]);
+        
         return redirect()->to('/roles')->with('success','Permisos asignados');
     }
 }

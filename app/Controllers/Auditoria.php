@@ -152,4 +152,52 @@ class Auditoria extends BaseController
             'message' => "Se eliminaron {$deleted} registros antiguos"
         ]);
     }
+
+    /**
+     * Ver historial de cambios de un registro específico
+     */
+    public function historial($modulo, $registro_id)
+    {
+        $historial = $this->auditoriaModel
+            ->where('modulo', $modulo)
+            ->where('registro_id', $registro_id)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
+
+        // Obtener información del registro según el módulo
+        $registro = $this->obtenerRegistro($modulo, $registro_id);
+
+        $data = [
+            'historial' => $historial,
+            'modulo' => $modulo,
+            'registro_id' => $registro_id,
+            'registro' => $registro
+        ];
+
+        return view('auditoria/historial', $data);
+    }
+
+    /**
+     * Obtener información del registro según el módulo
+     */
+    private function obtenerRegistro($modulo, $registro_id)
+    {
+        $modelMap = [
+            'Bienes' => 'App\Models\BienesModel',
+            'Personas' => 'App\Models\PersonasModel',
+            'Usuarios' => 'App\Models\UsuariosModel',
+            'Licencias' => 'App\Models\LicenciasModel',
+            'Proveedores' => 'App\Models\ProveedorModel',
+            'Celulares' => 'App\Models\CelularesModel',
+        ];
+
+        if (!isset($modelMap[$modulo])) {
+            return null;
+        }
+
+        $modelClass = $modelMap[$modulo];
+        $model = new $modelClass();
+
+        return $model->find($registro_id);
+    }
 }

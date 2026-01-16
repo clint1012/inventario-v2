@@ -34,6 +34,9 @@ $(document).ready(function () {
         data: null,
         render: function (data) {
           return `
+            <a href="${base_url}auditoria/historial/Proveedores/${data.id}" class="btn btn-secondary btn-sm" title="Ver historial">
+              <i class="fas fa-history"></i>
+            </a>
             <button class="btn btn-info btn-sm btn-pdf" data-id="${data.id}">PDF</button>
             <button class="btn btn-warning btn-sm btn-editar" data-id="${data.id}">Editar</button>
             <button class="btn btn-danger btn-sm btn-eliminar" data-id="${data.id}">Eliminar</button>`;

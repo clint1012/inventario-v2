@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\BienesModel;
 use App\Models\DepartamentosModel;
 use App\Models\localesModel;
+use App\Models\AuditoriaModel;
 
 
 
@@ -108,6 +109,14 @@ class Mantenimiento extends BaseController
 
         // Actualizar el estado a "activo" o "asignado" (según tu lógica)
         $bienesModel->update($id, ['estado' => 'activo']);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('RECUPERAR', 'Mantenimiento', $id, [
+            'cod_patrimonial' => $bien['cod_patrimonial'] ?? '',
+            'descripcion' => $bien['descripcion'] ?? '',
+            'estado_anterior' => 'mantenimiento',
+            'estado_nuevo' => 'activo'
+        ]);
 
         // Redireccionar con mensaje de éxito
         return redirect()->to('mantenimiento')->with('success', 'Bien activado correctamente.');

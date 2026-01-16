@@ -2,8 +2,15 @@
 <?= $this->section('contenido'); ?>
 
 <div class="container mt-4">
-    <h2>📱 Editar Celular</h2>
-    <a href="<?= base_url('celulares') ?>" class="btn btn-secondary mb-3">← Volver</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>📱 Editar Celular</h2>
+        <div>
+            <a href="<?= base_url('auditoria/historial/Celulares/' . $celular['id']) ?>" class="btn btn-info btn-sm" title="Ver historial de cambios">
+                <i class="fas fa-history"></i> Ver Historial
+            </a>
+            <a href="<?= base_url('celulares') ?>" class="btn btn-secondary btn-sm">← Volver</a>
+        </div>
+    </div>
 
     <div class="card">
         <div class="card-body">

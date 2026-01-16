@@ -1,7 +1,12 @@
 <?= $this->extend('plantilla'); ?>
 <?= $this->section('contenido'); ?>
 
-<h4>Editar Usuario</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="fas fa-user-edit"></i> Editar Usuario</h4>
+    <a href="<?= base_url('auditoria/historial/Usuarios/' . $usuario['id']) ?>" class="btn btn-info btn-sm" title="Ver historial de cambios">
+        <i class="fas fa-history"></i> Ver Historial
+    </a>
+</div>
 
 <form action="<?= base_url('/usuarios/update/'.$usuario['id']) ?>" method="post">
 

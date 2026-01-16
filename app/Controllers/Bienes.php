@@ -16,6 +16,23 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Bienes extends BaseController
 {
+    /**
+     * Devuelve el nombre del usuario actual asignado a un bien
+     */
+    public function getPorIdUsuario()
+    {
+        $bienId = $this->request->getGet('bien_id');
+        if (!$bienId) {
+            return $this->response->setJSON(['anterior' => '']);
+        }
+        $bien = $this->bienesModel->find($bienId);
+        if (!$bien || empty($bien['id_personas']) || $bien['id_personas'] == 255) {
+            return $this->response->setJSON(['anterior' => '']);
+        }
+        $persona = $this->personasModel->find($bien['id_personas']);
+        $nombre = $persona ? $persona['nombre_completo'] : '';
+        return $this->response->setJSON(['anterior' => $nombre]);
+    }
     private BienesModel $bienesModel;
     private DepartamentosModel $departamentosModel;
     private PersonasModel $personasModel;
@@ -639,7 +656,7 @@ class Bienes extends BaseController
         $this->validarClavesForaneas($datos);
         
         // Log de depuración (temporal)
-        log_message('debug', 'Datos a insertar: ' . json_encode($datos));
+        // ...existing code...
         
         // Verificar que los campos obligatorios estén presentes (incluyendo id_personas si es NOT NULL)
         if (!isset($datos['id_locales']) || !isset($datos['id_departamento']) || !isset($datos['id_personas'])) {
@@ -724,7 +741,7 @@ class Bienes extends BaseController
             } else {
                 // Si no existe el local, usar ID por defecto
                 $datos['id_locales'] = 5;
-                log_message('debug', "Local no encontrado. Usando ID por defecto: 5");
+                // ...existing code...
             }
         } else {
             // Si no hay nombre de local, usar ID por defecto
@@ -740,7 +757,7 @@ class Bienes extends BaseController
             } else {
                 // Si no existe el departamento, usar ID por defecto
                 $datos['id_departamento'] = 1;
-                log_message('debug', "Departamento no encontrado. Usando ID por defecto: 1");
+                // ...existing code...
             }
         } else {
             // Si no hay nombre de departamento, usar ID por defecto
@@ -757,7 +774,7 @@ class Bienes extends BaseController
             $persona = $this->buscarPersonaPorNombre($personaNombre);
             if ($persona && isset($persona['id']) && is_numeric($persona['id']) && $persona['id'] > 0) {
                 $datos['id_personas'] = (int)$persona['id'];
-                log_message('debug', "Persona encontrada: {$personaNombre} con ID: {$persona['id']}");
+                // ...existing code...
             } else {
                 // Persona no encontrada - usar ID por defecto
                 log_message('warning', "Persona NO encontrada: '{$personaNombre}'. Usando ID por defecto: 254");
@@ -766,7 +783,7 @@ class Bienes extends BaseController
         } else {
             // Sin persona especificada - usar ID por defecto
             $datos['id_personas'] = 254;
-            log_message('debug', "Sin persona especificada. Usando ID por defecto: 254");
+            // ...existing code...
         }
     }
 
@@ -788,7 +805,7 @@ class Bienes extends BaseController
                     $valor = trim($valor);
                     if ($valor === '' || $valor === '-' || strtolower($valor) === 'null') {
                         unset($datos[$clave]);
-                        log_message('debug', "Clave foránea '{$clave}' eliminada: valor string vacío o inválido");
+                        // ...existing code...
                         continue;
                     }
                 }
@@ -796,7 +813,7 @@ class Bienes extends BaseController
                 // Si el valor no es numérico, es 0, negativo, eliminarlo
                 if (!is_numeric($valor) || $valor <= 0) {
                     unset($datos[$clave]);
-                    log_message('debug', "Clave foránea '{$clave}' eliminada: no numérico o <= 0 (valor: {$valor})");
+                    // ...existing code...
                 } else {
                     // Convertir a entero para asegurar tipo correcto
                     $datos[$clave] = (int)$valor;
@@ -1116,17 +1133,17 @@ class Bienes extends BaseController
             ->where('b.estado !=', 'retirado');
 
         $get = $this->request->getGet();
-        log_message('debug', 'Params: ' . json_encode($get));
+        // ...existing code...
 
         $this->aplicarFiltrosBienes($builder, $get);
 
         $builder->orderBy('b.id', 'ASC');
 
-        log_message('debug', 'SQL: ' . $builder->getCompiledSelect(false));
+        // ...existing code...
 
         $rows = $builder->get()->getResultArray();
 
-        log_message('debug', 'Total rows: ' . count($rows));
+        // ...existing code...
 
         return $this->generarExcelBienes($rows, 'filtrados');
     }
@@ -1154,7 +1171,7 @@ class Bienes extends BaseController
             ->get()
             ->getResultArray();
 
-        log_message('debug', 'Export general rows: ' . count($rows));
+        // ...existing code...
 
         return $this->generarExcelBienes($rows, 'general');
     }

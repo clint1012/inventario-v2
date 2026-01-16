@@ -178,12 +178,70 @@
     $('#formAsignarBien').on('submit', function (e) {
         e.preventDefault();
         const formData = $(this).serialize();
-        $.post(asignarBienUrl, formData)
-            .done(() => {
-                $('#modalAsignarBien').modal('hide');
-                cargarEquipos($('#usuarioIdHidden').val());
+        const bienId = $('#asignarBienId').val();
+        // Consultar el usuario anterior por AJAX
+        $.getJSON('<?= base_url('bienes/getPorIdUsuario') ?>', { bien_id: bienId })
+            .done(function(data) {
+                let html = '¿Está seguro que desea reasignar este bien?';
+                if (data && data.anterior && data.anterior !== '') {
+                    html += `<br><strong>Actualmente está asignado a:</strong> <span style="color:#d33">${data.anterior}</span>`;
+                }
+                Swal.fire({
+                    title: '¿Confirmar reasignación?',
+                    html: html,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, reasignar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        refrescarCsrfToken().then(function(csrfTokenValue) {
+                            // Actualizar el token en el formData
+                            const fd = formData.replace(new RegExp(`${csrfTokenName}=[^&]*`), `${csrfTokenName}=${csrfTokenValue}`);
+                            $.post(asignarBienUrl, fd)
+                                .done(function(response) {
+                                    if (response && response.message) {
+                                        if (response.message.includes('Se ha reasignado.')) {
+                                            Swal.fire('Reasignado', response.message, 'info');
+                                        } else {
+                                            Swal.fire('Asignado', response.message, 'success');
+                                        }
+                                    }
+                                    $('#modalAsignarBien').modal('hide');
+                                    cargarEquipos($('#usuarioIdHidden').val());
+                                })
+                                .fail(() => Swal.fire('Error', 'No se pudo asignar el bien.', 'error'));
+                        });
+                    }
+                });
             })
-            .fail(() => alert('No se pudo asignar el bien.'));
+            .fail(function() {
+                // Si falla la consulta, mostrar el cuadro normal
+                Swal.fire({
+                    title: '¿Confirmar reasignación?',
+                    text: '¿Está seguro que desea reasignar este bien?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, reasignar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post(asignarBienUrl, formData)
+                            .done(function(response) {
+                                if (response && response.message) {
+                                    if (response.message.includes('Se ha reasignado.')) {
+                                        Swal.fire('Reasignado', response.message, 'info');
+                                    } else {
+                                        Swal.fire('Asignado', response.message, 'success');
+                                    }
+                                }
+                                $('#modalAsignarBien').modal('hide');
+                                cargarEquipos($('#usuarioIdHidden').val());
+                            })
+                            .fail(() => Swal.fire('Error', 'No se pudo asignar el bien.', 'error'));
+                    }
+                });
+            });
     });
 
     $('#usuarioBuscador').autocomplete({
@@ -327,6 +385,14 @@
                         <span>${eq.departamento ?? '—'}</span>
                     </div>
                     <div class="col-md-2">
+                        <small class="text-muted d-block">Condición</small>
+                        <select class="form-control form-control-sm" name="equipos[${eq.id}][condicion]">
+                            <option value="bueno">Bueno</option>
+                            <option value="regular">Regular</option>
+                            <option value="malo">Malo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <input type="text" class="form-control form-control-sm"
                             name="equipos[${eq.id}][comentario]" placeholder="Observación">
                     </div>
@@ -376,13 +442,30 @@
         const usuarioId = $('#usuarioIdHidden').val();
         if (!usuarioId || !confirm('¿Desea liberar este bien del usuario actual?')) return;
 
-        $.post(liberarBienUrl, {
-            [csrfTokenName]: $('input[name="<?= csrf_token() ?>"]').val(),
-            bien_id: bienId,
-            usuario_id: usuarioId
-        })
-            .done(() => cargarEquipos(usuarioId))
-            .fail(() => alert('No se pudo liberar el bien.'));
+        // Refrescar el token CSRF antes de la petición
+        refrescarCsrfToken().then(function(csrfTokenValue) {
+            $.post(liberarBienUrl, {
+                [csrfTokenName]: csrfTokenValue,
+                bien_id: bienId,
+                usuario_id: usuarioId
+            })
+                .done(() => cargarEquipos(usuarioId))
+                .fail(() => alert('No se pudo liberar el bien.'));
+        });
+    }
+
+    // Función para refrescar el token CSRF vía AJAX
+    function refrescarCsrfToken() {
+        return $.get('<?= base_url('inventario') ?>').then(function(html) {
+            // Extraer el nuevo token del HTML recibido
+            const match = html.match(/name="<?= csrf_token() ?>" value="([^"]+)"/);
+            if (match && match[1]) {
+                $("input[name='<?= csrf_token() ?>']").val(match[1]);
+                return match[1];
+            }
+            // Si no se encuentra, usar el actual
+            return $("input[name='<?= csrf_token() ?>']").val();
+        });
     }
 
     function abrirModalAsignar(bienId = null) {

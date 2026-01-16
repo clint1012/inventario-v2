@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\BienesModel;
 use App\Models\DepartamentosModel;
+use App\Models\AuditoriaModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -93,6 +94,14 @@ class Baja extends BaseController
 
         // Actualizar el estado a "activo" o "asignado" (según tu lógica)
         $bienesModel->update($id, ['estado' => 'activo']);
+        
+        // Registrar auditoría
+        AuditoriaModel::registrar('RECUPERAR', 'Baja', $id, [
+            'cod_patrimonial' => $bien['cod_patrimonial'] ?? '',
+            'descripcion' => $bien['descripcion'] ?? '',
+            'estado_anterior' => 'retirado',
+            'estado_nuevo' => 'activo'
+        ]);
 
         // Redireccionar con mensaje de éxito
         return redirect()->to('baja')->with('success', 'Bien recuperado correctamente.');

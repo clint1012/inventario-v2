@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\LicenciasModel;
+use App\Models\AuditoriaModel;
 use CodeIgniter\RESTful\ResourceController;
 
 class Licencias extends ResourceController
@@ -34,7 +35,13 @@ class Licencias extends ResourceController
     public function create()
     {
         $data = $this->request->getPost();
-        if ($this->model->insert($data)) {
+        if ($licencia_id = $this->model->insert($data)) {
+            // Registrar auditoría
+            AuditoriaModel::registrar('CREAR', 'Licencias', $licencia_id, [
+                'software' => $data['software'] ?? '',
+                'tipo_licencia' => $data['tipo_licencia'] ?? ''
+            ]);
+            
             return $this->respondCreated(['status' => 'ok', 'message' => 'Licencia creada correctamente']);
         }
         return $this->failValidationErrors($this->model->errors());
@@ -44,6 +51,12 @@ class Licencias extends ResourceController
     {
         $data = $this->request->getRawInput();
         if ($this->model->update($id, $data)) {
+            // Registrar auditoría
+            AuditoriaModel::registrar('EDITAR', 'Licencias', $id, [
+                'software' => $data['software'] ?? '',
+                'tipo_licencia' => $data['tipo_licencia'] ?? ''
+            ]);
+            
             return $this->respond(['status' => 'ok', 'message' => 'Licencia actualizada']);
         }
         return $this->failValidationErrors($this->model->errors());
@@ -51,7 +64,14 @@ class Licencias extends ResourceController
 
     public function delete($id = null)
     {
+        $licencia = $this->model->find($id);
         if ($this->model->delete($id)) {
+            // Registrar auditoría
+            AuditoriaModel::registrar('ELIMINAR', 'Licencias', $id, [
+                'software' => $licencia['software'] ?? '',
+                'tipo_licencia' => $licencia['tipo_licencia'] ?? ''
+            ]);
+            
             return $this->respondDeleted(['status' => 'ok', 'message' => 'Licencia eliminada']);
         }
         return $this->failNotFound('No se pudo eliminar la licencia');

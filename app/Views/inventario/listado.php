@@ -1,19 +1,60 @@
+<?php
+// ...existing code...
+try {
+    $db = \Config\Database::connect();
+    echo '<div style="background:#ffe;border:1px solid #cc0;padding:5px 10px;margin-bottom:10px;font-size:13px;">Base de datos activa: <b>' . $db->getDatabase() . '</b></div>';
+} catch (Exception $e) {
+    echo '<div style="background:#fcc;color:#900;padding:5px 10px;">Error obteniendo base de datos: ' . $e->getMessage() . '</div>';
+}
+?>
 <?php echo $this->extend('plantilla'); ?>
+<!-- jQuery debe cargarse antes de cualquier script que use $ -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <?= $this->section('contenido'); ?>
 
-<div class="card shadow-sm my-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Inventarios registrados</h4>
-        <div>
-            <a class="btn btn-sm btn-danger" href="#" id="btnExportarPDF">
-                <i class="fas fa-file-pdf"></i> Exportar PDF
-            </a>
-            <a class="btn btn-sm btn-success" href="#" id="btnExportarExcel">
-                <i class="fas fa-file-excel"></i> Exportar Excel
-            </a>
-            <a class="btn btn-sm btn-secondary" href="<?= base_url('inventario'); ?>">Nuevo inventario</a>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Inventarios</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <?= count($inventarios) ?>
+                </div>
+            </div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Bienes</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <?= array_sum(array_map(function($inv) use ($detalles) { return count($detalles[$inv['id']] ?? []); }, $inventarios)) ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Año Actual</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    <?= date('Y') ?>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 text-right align-self-center">
+        <a class="btn btn-sm btn-danger" href="#" id="btnExportarPDF">
+            <i class="fas fa-file-pdf"></i> Exportar PDF
+        </a>
+        <a class="btn btn-sm btn-success" href="#" id="btnExportarExcel">
+            <i class="fas fa-file-excel"></i> Exportar Excel
+        </a>
+        <a class="btn btn-sm btn-secondary" href="<?= base_url('inventario'); ?>">Nuevo inventario</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
     <div class="card-body">
         <div class="form-row mb-3">
             <div class="col-md-6">
@@ -51,18 +92,20 @@
         </div>
 
         <?php if (empty($inventarios)): ?>
+            <!-- jQuery debe cargarse antes de cualquier script que use $ -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <div class="p-4 text-center text-muted">No hay inventarios registrados.</div>
         <?php else: ?>
             <div class="list-group list-group-flush">
                 <?php foreach ($inventarios as $inv): ?>
-                    <div class="list-group-item inventario-item" data-usuario="<?= esc(strtolower($inv['usuario'] ?? '')); ?>"
+                    <div class="list-group-item inventario-item mb-4" data-usuario="<?= esc(strtolower($inv['usuario'] ?? '')); ?>"
                         data-anio="<?= esc($inv['anio']); ?>" data-mes="<?= esc($inv['mes'] ?? ''); ?>"
                         data-bienes="<?= esc(strtolower(json_encode(array_column($detalles[$inv['id']] ?? [], 'cod_patrimonial')))); ?>">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
-                                <h5 class="mb-1"><?= esc($inv['usuario'] ?? 'Usuario desconocido'); ?></h5>
+                                <h5 class="mb-1 text-primary"><i class="fas fa-user"></i> <?= esc($inv['usuario'] ?? 'Usuario desconocido'); ?></h5>
                                 <small class="d-block">
-                                    Periodo: <?= esc($inv['mes'] ?? '—'); ?> / <?= esc($inv['anio']); ?>
+                                    <span class="badge badge-info">Periodo: <?= esc($inv['mes'] ?? '—'); ?> / <?= esc($inv['anio']); ?></span>
                                 </small>
                                 <?php if (!empty($inv['regimen'])): ?>
                                     <small class="d-block text-muted">
@@ -76,9 +119,9 @@
                                 <?php endif; ?>
                             </div>
                             <div class="d-flex align-items-center">
-                                <span class="badge badge-primary badge-pill mr-2"
-                                    style="min-height: 2rem; display: flex; align-items: center; justify-content: center;">
-                                    <?= count($detalles[$inv['id']] ?? []); ?> bienes
+                                <span class="badge badge-success badge-pill mr-2"
+                                    style="min-height: 2rem; display: flex; align-items: center; justify-content: center; font-size:1.1em;">
+                                    <i class="fas fa-box"></i> <?= count($detalles[$inv['id']] ?? []); ?> bienes
                                 </span>
                                 <div class="btn-group btn-group-sm">
                                     <a href="<?= base_url('inventario/editar/' . $inv['id']); ?>"
@@ -94,8 +137,8 @@
                         </div>
                         <?php if (!empty($detalles[$inv['id']])): ?>
                             <div class="mt-3">
-                                <table class="table table-sm mb-0">
-                                    <thead>
+                                <table class="table table-bordered table-hover table-sm mb-0">
+                                    <thead class="thead-light">
                                         <tr>
                                             <th>SBN</th>
                                             <th>Descripción</th>
@@ -103,6 +146,8 @@
                                             <th>Serie</th>
                                             <th>Local</th>
                                             <th>Departamento</th>
+                                            <th>Condición</th>
+                                            <th>Comentario</th>
                                             <th>Verificado</th>
                                         </tr>
                                     </thead>
@@ -115,7 +160,17 @@
                                                 <td><?= esc($detalle['serie'] ?? '—'); ?></td>
                                                 <td><?= esc($detalle['local'] ?? '—'); ?></td>
                                                 <td><?= esc($detalle['departamento'] ?? '—'); ?></td>
-                                                <td><?= $detalle['verificado'] ? 'Sí' : 'No'; ?></td>
+                                                <td><?= esc($detalle['condicion'] ?? '—'); ?> 
+                                                    <!-- ...existing code... -->
+                                                </td>
+                                                <td><?= esc($detalle['comentario'] ?? ''); ?></td>
+                                                <td>
+                                                    <?php if ($detalle['verificado']): ?>
+                                                        <span class="badge badge-success">Sí</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-secondary">No</span>
+                                                    <?php endif; ?>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -129,7 +184,6 @@
     </div>
 </div>
 
-<?= $this->section('scripts') ?>
 <script>
     const eliminarInventarioUrl = "<?= base_url('inventario/eliminar'); ?>";
     const csrfTokenName = "<?= csrf_token() ?>";
@@ -188,14 +242,22 @@
             });
     }
 
-    $('#buscadorInventario').on('keyup', filtrarInventarios);
-    $('#filtroAnio').on('change', filtrarInventarios);
-    $('#filtroMes').on('change', filtrarInventarios);
+    $(document).ready(function() {
+        $('#buscadorInventario').on('keyup', filtrarInventarios);
+        $('#filtroAnio').on('change', filtrarInventarios);
+        $('#filtroMes').on('change', filtrarInventarios);
 
-    $('#btnExportarPDF').on('click', function (e) {
-        e.preventDefault();
-        const url = construirUrlExportar('<?= base_url('inventario/exportar-pdf'); ?>');
-        window.open(url, '_blank');
+        $('#btnExportarPDF').on('click', function (e) {
+            e.preventDefault();
+            const url = construirUrlExportar('<?= base_url('inventario/exportar-pdf'); ?>');
+            window.open(url, '_blank');
+        });
+
+        $('#btnExportarExcel').on('click', function (e) {
+            e.preventDefault();
+            const url = construirUrlExportar('<?= base_url('inventario/exportar-excel'); ?>');
+            window.open(url, '_blank');
+        });
     });
 
     $('#btnExportarExcel').on('click', function (e) {
@@ -206,4 +268,3 @@
 </script>
 <?= $this->endSection(); ?>
 
-<?= $this->endSection(); ?>
